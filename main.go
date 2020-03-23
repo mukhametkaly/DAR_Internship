@@ -31,6 +31,14 @@ func main() {
 	if err!=nil{
 		log.Fatal(err)
 	}
+	coursecol,err:=Courses.NewCourseCollection(conf)
+	if err!=nil{
+		log.Fatal(err)
+	}
+
+
+
+
 
 	internshipendpoints:=Internship.NewEndpointsFactory(internshipcol)
 	router.Methods("GET").Path("/internship/").HandlerFunc(internshipendpoints.GetInternships())
@@ -41,12 +49,9 @@ func main() {
 
 
 
-	/////// Course
-	coursecol,err:=Courses.NewCourseCollection(conf)
-	if err!=nil{
-		log.Fatal(err)
-	}
-	courseendpoints:=Courses.NewEndpointsFactory(coursecol)
+
+	course_in_intrnshp := Courses.New_Cours_in_Internship_Collection(internshipcol, coursecol)
+	courseendpoints:=Courses.NewEndpointsFactory(course_in_intrnshp)
 	router.Methods("GET").Path("/course/").HandlerFunc(courseendpoints.GetCourses())
 	router.Methods("GET").Path("/course/{id}").HandlerFunc(courseendpoints.GetCourse("id"))
 	router.Methods("DELETE").Path("/course/{id}").HandlerFunc(courseendpoints.DeleteCourse("id"))
