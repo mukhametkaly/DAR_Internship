@@ -18,12 +18,12 @@ type Endpoints interface {
 }
 
 type endpointsFactory struct {
-	Questnr QuestionnaireCollection
+	Performer QuestionnairePerformer
 }
 
-func NewEndpointsFactory(questnr QuestionnaireCollection) Endpoints{
+func NewEndpointsFactory(questnr QuestionnairePerformer) Endpoints{
 	return &endpointsFactory{
-		Questnr: questnr,
+		Performer: questnr,
 	}
 }
 
@@ -41,7 +41,7 @@ func respondJSON(w http.ResponseWriter, status int, payload interface{}) {
 
 func (ef *endpointsFactory) GetQuestionnaires() func(w http.ResponseWriter,r *http.Request){
 	return func(w http.ResponseWriter,r *http.Request){
-		questionnaires, err := ef.Questnr.GetQuestionnaires()
+		questionnaires, err := ef.Performer.GetQuestionnaires()
 		if err != nil {
 			respondJSON(w, http.StatusInternalServerError, "Ошибка"+err.Error())
 			return
@@ -64,7 +64,7 @@ func (ef *endpointsFactory) AddQuestionnaire() func(w http.ResponseWriter,r *htt
 			respondJSON(w,http.StatusBadRequest,err.Error())
 			return
 		}
-		st,err:=ef.Questnr.AddQuestionnaire(questionnaire)
+		st,err:=ef.Performer.AddQuestionnaire(questionnaire)
 		if err!=nil{
 			respondJSON(w,http.StatusBadRequest,err.Error())
 			return
@@ -82,7 +82,7 @@ func (ef *endpointsFactory) GetQuestionnaire(idParam string) func(w http.Respons
 			return
 		}
 		id,err:=strconv.ParseInt(paramid,10,10)
-		questionnnaire,err:=ef.Questnr.GetQuestionnaire(id)
+		questionnnaire,err:=ef.Performer.GetQuestionnaire(id)
 		if err!=nil{
 			respondJSON(w,http.StatusInternalServerError,err.Error())
 			return
@@ -105,12 +105,12 @@ func (ef *endpointsFactory) DeleteQuestionnaire(idParam string) func(w http.Resp
 			respondJSON(w,http.StatusBadRequest,err.Error())
 			return
 		}
-		questionnaire,err:=ef.Questnr.GetQuestionnaire(id)
+		questionnaire,err:=ef.Performer.GetQuestionnaire(id)
 		if err!=nil{
 			respondJSON(w,http.StatusInternalServerError,err.Error())
 			return
 		}
-		err=ef.Questnr.DeleteQuestionnaire(questionnaire)
+		err=ef.Performer.DeleteQuestionnaire(questionnaire)
 		if err!=nil{
 			respondJSON(w,http.StatusInternalServerError,err.Error())
 			return
@@ -134,7 +134,7 @@ func (ef *endpointsFactory) UpdateQuestionnaire(idParam string) func(w http.Resp
 			respondJSON(w,http.StatusBadRequest,err.Error())
 			return
 		}
-		questionnaire,err:=ef.Questnr.GetQuestionnaire(id)
+		questionnaire,err:=ef.Performer.GetQuestionnaire(id)
 		if err!=nil{
 			respondJSON(w,http.StatusInternalServerError,err.Error())
 			return
@@ -148,7 +148,7 @@ func (ef *endpointsFactory) UpdateQuestionnaire(idParam string) func(w http.Resp
 			respondJSON(w,http.StatusInternalServerError,err.Error())
 			return
 		}
-		updated_questionnaire,err:=ef.Questnr.UpdateQuestionnaire(questionnaire)
+		updated_questionnaire,err:=ef.Performer.UpdateQuestionnaire(questionnaire)
 		if err!=nil{
 			respondJSON(w,http.StatusInternalServerError,err)
 			return
