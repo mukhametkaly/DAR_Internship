@@ -11,7 +11,7 @@ import (
 	"./Intern"
 	"./Contest"
 	"./Questionnaire"
-	"./InterviewCalendar"
+	"./Interview_Calendar"
 
 
 )
@@ -35,6 +35,10 @@ func main() {
 	if err!=nil{
 		log.Fatal(err)
 	}
+	questionnaire,err:=Questionnaire.NewQuestionnaireCollection(conf)
+	if err!=nil{
+		log.Fatal(err)
+	}
 
 
 
@@ -50,8 +54,8 @@ func main() {
 
 
 
-	course_in_intrnshp := Courses.New_Cours_in_Internship_Collection(internshipcol, coursecol)
-	courseendpoints:=Courses.NewEndpointsFactory(course_in_intrnshp)
+	courseINintrnshp := Courses.NewCoursesInInternship(internshipcol, coursecol)
+	courseendpoints:=Courses.NewEndpointsFactory(courseINintrnshp)
 	router.Methods("GET").Path("/course/").HandlerFunc(courseendpoints.GetCourses())
 	router.Methods("GET").Path("/course/{id}").HandlerFunc(courseendpoints.GetCourse("id"))
 	router.Methods("DELETE").Path("/course/{id}").HandlerFunc(courseendpoints.DeleteCourse("id"))
@@ -59,11 +63,8 @@ func main() {
 	router.Methods("POST").Path("/course/").HandlerFunc(courseendpoints.AddCourse())
 
 
-	questionnaire,err:=Questionnaire.NewQuestionnaireCollection(conf)
-	if err!=nil{
-		log.Fatal(err)
-	}
-	questionnaireendpoints:=Questionnaire.NewEndpointsFactory(questionnaire)
+	questionnaireINinternship := Questionnaire.NewQuestionnaireInInternship(internshipcol, questionnaire)
+	questionnaireendpoints:=Questionnaire.NewEndpointsFactory(questionnaireINinternship)
 	router.Methods("GET").Path("/questionnaire/").HandlerFunc(questionnaireendpoints.GetQuestionnaires())
 	router.Methods("GET").Path("/questionnaire/{id}").HandlerFunc(questionnaireendpoints.GetQuestionnaire("id"))
 	router.Methods("DELETE").Path("/questionnaire/{id}").HandlerFunc(questionnaireendpoints.DeleteQuestionnaire("id"))
@@ -76,24 +77,26 @@ func main() {
 	if err!=nil{
 		log.Fatal(err)
 	}
-	contestendpoints:=Contest.NewEndpointsFactory(contest)
-	router.Methods("GET").Path("/questionnaire/").HandlerFunc(contestendpoints.GetContests())
-	router.Methods("GET").Path("/questionnaire/{id}").HandlerFunc(contestendpoints.GetContest("id"))
-	router.Methods("DELETE").Path("/questionnaire/{id}").HandlerFunc(contestendpoints.DeleteContest("id"))
-	router.Methods("PUT").Path("/questionnaire/{id}").HandlerFunc(contestendpoints.UpdateContest("id"))
-	router.Methods("POST").Path("/questionnaire/").HandlerFunc(contestendpoints.AddContest())
+	contestToInternship := Contest.NewCoursesinInternship(internshipcol, contest)
+	contestendpoints:=Contest.NewEndpointsFactory(contestToInternship)
+	router.Methods("GET").Path("/contest/").HandlerFunc(contestendpoints.GetContests())
+	router.Methods("GET").Path("/contest/{id}").HandlerFunc(contestendpoints.GetContest("id"))
+	router.Methods("DELETE").Path("/contest/{id}").HandlerFunc(contestendpoints.DeleteContest("id"))
+	router.Methods("PUT").Path("/contest/{id}").HandlerFunc(contestendpoints.UpdateContest("id"))
+	router.Methods("POST").Path("/contest/").HandlerFunc(contestendpoints.AddContest())
 
 
-	calendar,err:=InterviewCalendar.NewInterviewCalendarCollection(conf)
+	calendar,err:= Interview_Calendar.NewInterviewCalendarCollection(conf)
 	if err!=nil{
 		log.Fatal(err)
 	}
-	calendarendpoints:=InterviewCalendar.NewEndpointsFactory(calendar)
-	router.Methods("GET").Path("/questionnaire/").HandlerFunc(calendarendpoints.GetInterviewCalendars())
-	router.Methods("GET").Path("/questionnaire/{id}").HandlerFunc(calendarendpoints.GetInterviewCalendar("id"))
-	router.Methods("DELETE").Path("/questionnaire/{id}").HandlerFunc(calendarendpoints.DeleteInterviewCalendar("id"))
-	router.Methods("PUT").Path("/questionnaire/{id}").HandlerFunc(calendarendpoints.UpdateInterviewCalendar("id"))
-	router.Methods("POST").Path("/questionnaire/").HandlerFunc(calendarendpoints.AddInterviewCalendar())
+	interviewCal := Interview_Calendar.NewCourseIntern(coursecol, calendar)
+	calendarendpoints:= Interview_Calendar.NewEndpointsFactory(interviewCal)
+	router.Methods("GET").Path("/calendar/").HandlerFunc(calendarendpoints.GetInterviewCalendars())
+	router.Methods("GET").Path("/calendar/{id}").HandlerFunc(calendarendpoints.GetInterviewCalendar("id"))
+	router.Methods("DELETE").Path("/calendar/{id}").HandlerFunc(calendarendpoints.DeleteInterviewCalendar("id"))
+	router.Methods("PUT").Path("/calendar/{id}").HandlerFunc(calendarendpoints.UpdateInterviewCalendar("id"))
+	router.Methods("POST").Path("/calendar/").HandlerFunc(calendarendpoints.AddInterviewCalendar())
 
 
 
@@ -101,7 +104,8 @@ func main() {
 	if err!=nil{
 		log.Fatal(err)
 	}
-	internendpoints:=Intern.NewEndpointsFactory(intern)
+	courseIntern := Intern.NewCourseIntern(coursecol, intern)
+	internendpoints:=Intern.NewEndpointsFactory(courseIntern)
 	router.Methods("GET").Path("/questionnaire/").HandlerFunc(internendpoints.GetInterns())
 	router.Methods("GET").Path("/questionnaire/{id}").HandlerFunc(internendpoints.GetIntern("id"))
 	router.Methods("DELETE").Path("/questionnaire/{id}").HandlerFunc(internendpoints.DeleteIntern("id"))

@@ -10,7 +10,7 @@ type InternshipCollection interface {
 
 type Internship struct {
 
-	InternshipID int `json:"internship_id"`
+	InternshipID int64 `json:"internship_id"`
 	Title string `json:"title,omitempty"`
 	StartTime string `json:"starttime,omitempty"`
 	EndTime string `json:"endtime,omitempty"`

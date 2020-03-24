@@ -9,14 +9,15 @@ type InternCollection interface {
 }
 
 type Intern struct {
-	InternID int64 `json:"intern_id"`
-	Name string `json:"name, omitempty"`
-	LecturerName string `json:"lecture_name, omitempty"`
-	contestID int64 `json:"contest_id, omitempty"`
-	courseID int64 `json:"course_id, omitempty"`
-	status string `json:"status, omitempty"`
-	contest_score string `json:"contest_score, omitempty"`
-	contestUsername string `json:"contest_username,omitempty"`
+	InternID        int64  `json:"intern_id"`
+	Name            string `json:"name"`
+	Mail            string `json:"mail"`
+	answers       []string `json:"answers"`
+	contestID       int64  `json:"contest_id"`
+	courseID        int64  `json:"course_id"`
+	status          string `json:"status"`
+	contest_score   string `json:"contest_score"`
+	contestUsername string `json:"contest_username"`
 
 
 }

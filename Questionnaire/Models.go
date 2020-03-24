@@ -11,9 +11,9 @@ type QuestionnaireCollection interface {
 type Questionnaire struct {
 
 	QuestionnaireID int `json:"questionnaire_id"`
-	InternshipID int `json:"internship_id"`
-	Questions []string `json:"questions,omitempty"`
-	StartTime string `json:"starttime,omitempty"`
-	EndTime string `json:"endtime,omitempty"`
+	InternshipID int64 `json:"internship_id"`
+	Questions []string `json:"questions"`
+	StartTime string `json:"starttime"`
+	EndTime string `json:"endtime"`
 }
 

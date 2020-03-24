@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="96b88569-1ea0-4586-93c2-28d4ec1af3eb" name="Default Changelist" comment="" />
+    <list default="true" id="96b88569-1ea0-4586-93c2-28d4ec1af3eb" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/Lecturer/Lecturer_Endpoints.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Lecturer/Models.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Lecturer/Mongo_Lecturer.go" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -16,7 +20,14 @@
   </component>
   <component name="GOROOT" path="C:\Go" />
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/DARProject" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../../../.." />
+  </component>
+  <component name="IgnoredFileRootStore">
+    <option name="generatedRoots">
+      <set>
+        <option value="C:\Users\Mukhametkaly\Desktop\BackEnd\DAR\InternshipsProject\INTERNS\.idea" />
+      </set>
+    </option>
   </component>
   <component name="ProjectId" id="1Yzu2NWRXedDXTpst9Fu3aEacRy" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
@@ -94,9 +105,9 @@
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state x="462" y="10" width="611" height="804" key="find.popup/0.0.1536.824@0.0.1536.824" timestamp="1584603155549" />
-    <state x="425" y="66" width="670" height="676" key="search.everywhere.popup" timestamp="1584696090437">
+    <state x="425" y="66" width="672" height="676" key="search.everywhere.popup" timestamp="1585076020437">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state x="425" y="66" width="670" height="676" key="search.everywhere.popup/0.0.1536.824@0.0.1536.824" timestamp="1584696090437" />
+    <state x="425" y="66" width="672" height="676" key="search.everywhere.popup/0.0.1536.824@0.0.1536.824" timestamp="1585076020437" />
   </component>
 </project>
