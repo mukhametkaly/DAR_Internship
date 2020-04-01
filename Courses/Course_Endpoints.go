@@ -1,11 +1,8 @@
 package Courses
 
 import (
-
 	"encoding/json"
 	"github.com/gorilla/mux"
-
-
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -17,16 +14,17 @@ type Endpoints interface {
 	GetCourse(idParam string) func(w http.ResponseWriter,r *http.Request)
 	UpdateCourse(idParam string) func(w http.ResponseWriter,r *http.Request)
 	DeleteCourse(idParam string) func(w http.ResponseWriter,r *http.Request)
+	GetCoursesFromInternship (idParam string)  func(w http.ResponseWriter,r *http.Request)
 
 }
 
 type endpointsFactory struct {
-	Cours_in_intrnshp Courses_in_Internship
+	CrsInIntrnshp CoursesInInternship
 }
 
-func NewEndpointsFactory(cours_in_intrnshp Courses_in_Internship) Endpoints{
+func NewEndpointsFactory(crsinintrnshp CoursesInInternship) Endpoints{
 	return &endpointsFactory{
-		Cours_in_intrnshp: cours_in_intrnshp,
+		CrsInIntrnshp: crsinintrnshp,
 	}
 }
 
@@ -44,7 +42,7 @@ func respondJSON(w http.ResponseWriter, status int, payload interface{}) {
 
 func (ef *endpointsFactory) GetCourses() func(w http.ResponseWriter,r *http.Request){
 	return func(w http.ResponseWriter,r *http.Request){
-		course, err := ef.Cours_in_intrnshp.GetCourses()
+		course, err := ef.CrsInIntrnshp.GetCourses()
 		if err != nil {
 			respondJSON(w, http.StatusInternalServerError, "Ошибка"+err.Error())
 			return
@@ -66,7 +64,7 @@ func (ef *endpointsFactory) AddCourse() func(w http.ResponseWriter,r *http.Reque
 			respondJSON(w,http.StatusBadRequest,err.Error())
 			return
 		}
-		st,err:=ef.Cours_in_intrnshp.AddCourse(courses)
+		st,err:=ef.CrsInIntrnshp.AddCourse(courses)
 		if err!=nil{
 			respondJSON(w,http.StatusBadRequest,err.Error())
 			return
@@ -84,7 +82,7 @@ func (ef *endpointsFactory) GetCourse(idParam string) func(w http.ResponseWriter
 			return
 		}
 		id,err:=strconv.ParseInt(paramid,10,10)
-		course,err:=ef.Cours_in_intrnshp.GetCourse(id)
+		course,err:=ef.CrsInIntrnshp.GetCourse(id)
 		if err!=nil{
 			respondJSON(w,http.StatusInternalServerError,err.Error())
 			return
@@ -107,12 +105,12 @@ func (ef *endpointsFactory) DeleteCourse(idParam string) func(w http.ResponseWri
 			respondJSON(w,http.StatusBadRequest,err.Error())
 			return
 		}
-		course,err:=ef.Cours_in_intrnshp.GetCourse(id)
+		course,err:=ef.CrsInIntrnshp.GetCourse(id)
 		if err!=nil{
 			respondJSON(w,http.StatusInternalServerError,err.Error())
 			return
 		}
-		err=ef.Cours_in_intrnshp.DeleteCourse(course)
+		err=ef.CrsInIntrnshp.DeleteCourse(course)
 		if err!=nil{
 			respondJSON(w,http.StatusInternalServerError,err.Error())
 			return
@@ -136,7 +134,7 @@ func (ef *endpointsFactory) UpdateCourse(idParam string) func(w http.ResponseWri
 			respondJSON(w,http.StatusBadRequest,err.Error())
 			return
 		}
-		course,err:=ef.Cours_in_intrnshp.GetCourse(id)
+		course,err:=ef.CrsInIntrnshp.GetCourse(id)
 		if err!=nil{
 			respondJSON(w,http.StatusInternalServerError,err.Error())
 			return
@@ -150,7 +148,7 @@ func (ef *endpointsFactory) UpdateCourse(idParam string) func(w http.ResponseWri
 			respondJSON(w,http.StatusInternalServerError,err.Error())
 			return
 		}
-		updated_course,err:=ef.Cours_in_intrnshp.UpdateCourse(course)
+		updated_course,err:=ef.CrsInIntrnshp.UpdateCourse(course)
 		if err!=nil{
 			respondJSON(w,http.StatusInternalServerError,err)
 			return
@@ -158,3 +156,23 @@ func (ef *endpointsFactory) UpdateCourse(idParam string) func(w http.ResponseWri
 		respondJSON(w,http.StatusOK,updated_course)
 	}
 }
+
+
+func (ef *endpointsFactory) GetCoursesFromInternship (idParam string)  func(w http.ResponseWriter,r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars:=mux.Vars(r)
+		paramid, paramerr:=vars[idParam]
+		if !paramerr{
+			respondJSON(w,http.StatusBadRequest,"Не был передан аргумент")
+			return
+		}
+		id,err:=strconv.ParseInt(paramid,10,10)
+		course,err:=ef.CrsInIntrnshp.GetCoursesFromInternship(id)
+		if err!=nil{
+			respondJSON(w,http.StatusInternalServerError,err.Error())
+			return
+		}
+		respondJSON(w,http.StatusOK,course)
+	}
+}
+

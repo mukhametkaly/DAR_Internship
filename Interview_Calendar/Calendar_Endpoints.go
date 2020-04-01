@@ -14,6 +14,7 @@ type Endpoints interface {
 	GetInterviewCalendar(idParam string) func(w http.ResponseWriter,r *http.Request)
 	UpdateInterviewCalendar(idParam string) func(w http.ResponseWriter,r *http.Request)
 	DeleteInterviewCalendar(idParam string) func(w http.ResponseWriter,r *http.Request)
+	GetInternviewCalendarFromCourses (idParam string)  func(w http.ResponseWriter,r *http.Request)
 
 }
 
@@ -155,4 +156,25 @@ func (ef *endpointsFactory) UpdateInterviewCalendar(idParam string) func(w http.
 		respondJSON(w,http.StatusOK,updated_interviewCalendar)
 	}
 }
+
+func (ef *endpointsFactory) GetInternviewCalendarFromCourses (idParam string)  func(w http.ResponseWriter,r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars:=mux.Vars(r)
+		paramid, paramerr:=vars[idParam]
+		if !paramerr{
+			respondJSON(w,http.StatusBadRequest,"Не был передан аргумент")
+			return
+		}
+		id,err:=strconv.ParseInt(paramid,10,10)
+		interns,err:=ef.InterCal.GetInternviewCalendarFromCourses(id)
+		if err!=nil{
+			respondJSON(w,http.StatusInternalServerError,err.Error())
+			return
+		}
+		respondJSON(w,http.StatusOK,interns)
+	}
+}
+
+
+
 

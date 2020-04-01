@@ -14,6 +14,7 @@ type Endpoints interface {
 	GetLecturer(idParam string) func(w http.ResponseWriter,r *http.Request)
 	UpdateLecturer(idParam string) func(w http.ResponseWriter,r *http.Request)
 	DeleteLecturer(idParam string) func(w http.ResponseWriter,r *http.Request)
+	GetLecturerFromCourses (idParam string)  func(w http.ResponseWriter,r *http.Request)
 
 }
 
@@ -154,5 +155,26 @@ func (ef *endpointsFactory) UpdateLecturer(idParam string) func(w http.ResponseW
 		respondJSON(w,http.StatusOK,updated_lecturer)
 	}
 }
+
+func (ef *endpointsFactory) GetLecturerFromCourses (idParam string)  func(w http.ResponseWriter,r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars:=mux.Vars(r)
+		paramid, paramerr:=vars[idParam]
+		if !paramerr{
+			respondJSON(w,http.StatusBadRequest,"Не был передан аргумент")
+			return
+		}
+		id,err:=strconv.ParseInt(paramid,10,10)
+		lecturer,err:=ef.Lectrs.GetLecturerFromCourses(id)
+		if err!=nil{
+			respondJSON(w,http.StatusInternalServerError,err.Error())
+			return
+		}
+		respondJSON(w,http.StatusOK,lecturer)
+	}
+}
+
+
+
 
 

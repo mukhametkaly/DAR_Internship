@@ -1,7 +1,7 @@
 package Interview_Calendar
 
 import (
-	"../Courses"
+	"Internship/Courses"
 	"errors"
 )
 
@@ -13,6 +13,7 @@ type CourseInterviewsCal interface {
 	GetInterviewCal(id int64)           (*InterviewCalendar, error)
 	UpdateInterviewCal(intrvw *InterviewCalendar) (*InterviewCalendar, error)
 	DeleteInterviewCal(intrvw *InterviewCalendar)            error
+	GetInternviewCalendarFromCourses (id int64)  ([]*InterviewCalendar, error)
 }
 
 type CourseInterviewsCalClass struct {
@@ -26,10 +27,10 @@ func NewCourseIntern(courscollection Courses.CourseCollection, intrvwCal Intervi
 
 func(Intrnvw *CourseInterviewsCalClass) CheckInterviewCal (interview *InterviewCalendar)  (*InterviewCalendar, error)  {
 
-	if interview.comeTime == "" {
+	if interview.ComeTime == "" {
 		return nil, errors.New("No come time ")
 	}
-	if interview.comeDate == "" {
+	if interview.ComeDate == "" {
 		return nil, errors.New("No come date ")
 	}
 	if interview.LecturerMail == "" {
@@ -103,3 +104,20 @@ func (Intrnvw *CourseInterviewsCalClass) DeleteInterviewCal (interview *Intervie
 	return err
 
 }
+func (Intrnvw *CourseInterviewsCalClass) GetInternviewCalendarFromCourses (id int64)  ([]*InterviewCalendar, error) {
+	_, err := Intrnvw.courses.GetCourse(id)
+	if err != nil {
+		return nil,err
+	}
+	interviews, err:= Intrnvw.intervw.GetInternviewCalendarFromCourses(id)
+	if err != nil {
+		return nil, err
+	}
+	return interviews, nil
+
+}
+
+
+
+
+

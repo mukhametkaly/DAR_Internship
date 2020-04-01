@@ -1,31 +1,32 @@
 package Contest
 
 import (
-"../internship"
-"errors"
+	"Internship/internship"
+	"errors"
 )
 
 
 
-type CoursesinInternship interface {
+type ContestsinInternship interface {
 	CheckContest(contest *Contest)    (*Contest, error)
 	AddContest (contest *Contest)    (*Contest, error)
 	GetContests()                  ([]*Contest,error)
 	GetContest(id int64)           (*Contest, error)
 	UpdateContest(contest *Contest) (*Contest, error)
 	DeleteContest(contest *Contest)            error
+	GetContestsFromInternship (id int64)  ([]*Contest, error)
 }
 
-type CoursesinInternshipClass struct {
+type ContestsinInternshipClass struct {
 	conts ContestCollection
 	internship Internship.InternshipCollection
 }
 
-func NewCoursesinInternship(intcollection Internship.InternshipCollection, contestcollection ContestCollection )  CoursesinInternship {
-	return &CoursesinInternshipClass{conts:contestcollection, internship: intcollection}
+func NewContestsinInternship(intcollection Internship.InternshipCollection, contestcollection ContestCollection )  ContestsinInternship {
+	return &ContestsinInternshipClass{conts:contestcollection, internship: intcollection}
 }
 
-func(ContestIntrnshp *CoursesinInternshipClass) CheckContest (contest *Contest)  (*Contest, error)  {
+func(ContestIntrnshp *ContestsinInternshipClass) CheckContest (contest *Contest)  (*Contest, error)  {
 
 	if contest.Title == "" {
 		return nil, errors.New("No Title ")
@@ -52,7 +53,7 @@ func(ContestIntrnshp *CoursesinInternshipClass) CheckContest (contest *Contest) 
 	return contest, nil
 }
 
-func (ContestIntrnshp *CoursesinInternshipClass) GetContests() ([]*Contest,error) {
+func (ContestIntrnshp *ContestsinInternshipClass) GetContests() ([]*Contest,error) {
 	contests, err:=ContestIntrnshp.conts.GetContests()
 	if err != nil {
 		return nil, err
@@ -60,7 +61,7 @@ func (ContestIntrnshp *CoursesinInternshipClass) GetContests() ([]*Contest,error
 	return contests, err
 }
 
-func (ContestIntrnshp *CoursesinInternshipClass) GetContest(id int64)  (*Contest, error)  {
+func (ContestIntrnshp *ContestsinInternshipClass) GetContest(id int64)  (*Contest, error)  {
 
 	course, err := ContestIntrnshp.conts.GetContest(id)
 	if err!= nil {
@@ -69,7 +70,7 @@ func (ContestIntrnshp *CoursesinInternshipClass) GetContest(id int64)  (*Contest
 	return course, nil
 }
 
-func (ContestIntrnshp *CoursesinInternshipClass)AddContest (contest *Contest)    (*Contest, error) {
+func (ContestIntrnshp *ContestsinInternshipClass)AddContest (contest *Contest)    (*Contest, error) {
 	_, err := ContestIntrnshp.CheckContest(contest)
 	if err != nil {
 		return nil, err
@@ -81,7 +82,7 @@ func (ContestIntrnshp *CoursesinInternshipClass)AddContest (contest *Contest)   
 	return contest, nil
 }
 
-func (ContestIntrnshp *CoursesinInternshipClass) UpdateContest(contest *Contest) (*Contest, error) {
+func (ContestIntrnshp *ContestsinInternshipClass) UpdateContest(contest *Contest) (*Contest, error) {
 	_, err := ContestIntrnshp.CheckContest(contest)
 	if err != nil {
 		return nil, err
@@ -93,7 +94,7 @@ func (ContestIntrnshp *CoursesinInternshipClass) UpdateContest(contest *Contest)
 	return contest, nil
 
 }
-func (ContestIntrnshp *CoursesinInternshipClass) DeleteContest(contest *Contest)  error {
+func (ContestIntrnshp *ContestsinInternshipClass) DeleteContest(contest *Contest)  error {
 	if contest.ContestID == 0 {
 		return errors.New("NO ID")
 	}
@@ -104,6 +105,22 @@ func (ContestIntrnshp *CoursesinInternshipClass) DeleteContest(contest *Contest)
 	return err
 
 }
+func (CrsIntrnship *ContestsinInternshipClass) GetContestsFromInternship (id int64)  ([]*Contest, error) {
+	_, err := CrsIntrnship.internship.GetInternship(id)
+	if err != nil {
+		return nil,err
+	}
+	interns, err:= CrsIntrnship.conts.GetContestFromInternship(id)
+	if err != nil {
+		return nil, err
+	}
+	return interns, nil
+
+}
+
+
+
+
 
 
 

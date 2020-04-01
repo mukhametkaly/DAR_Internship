@@ -6,7 +6,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"../internship"
+	"Internship/internship"
+	"log"
 )
 var (
 	collection *mongo.Collection
@@ -118,5 +119,29 @@ func (cocc *CourseCollectionClass) UpdateCourse (course *Courses)  (*Courses, er
 		return nil,err
 	}
 	return course,nil
+}
+
+
+func (cocc *CourseCollectionClass) GetCoursesFromInternship (id int64)  ([]*Courses, error)  {
+	filter:=bson.D{{"internshipid",id}}
+	options:=options.Find()
+	var courses []*Courses
+	cur, err := collection.Find(context.TODO(), filter, options)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for cur.Next(context.TODO()){
+		var course Courses
+		err:=cur.Decode(&course)
+		if err!=nil{
+			return nil,err
+		}
+		courses = append(courses,&course)
+	}
+	if err:=cur.Err();err!=nil{
+		return nil,err
+	}
+	cur.Close(context.TODO())
+	return courses,nil
 }
 

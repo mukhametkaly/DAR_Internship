@@ -1,8 +1,8 @@
 package Questionnaire
 
 import (
-"../internship"
-"errors"
+	"Internship/internship"
+    "errors"
 )
 
 
@@ -12,6 +12,7 @@ type QuestionnaireInInternship interface {
 	GetQuestionnaire(id int64) (*Questionnaire, error)
 	UpdateQuestionnaire(questionnaire *Questionnaire) (*Questionnaire, error)
 	DeleteQuestionnaire(questionnaire *Questionnaire) error
+	GetQuestionnaireFromInternship (id int64) (*Questionnaire, error)
 }
 
 type QuestionnaireInInternshipClass struct {
@@ -94,6 +95,18 @@ func (QuestIntrnshp *QuestionnaireInInternshipClass) DeleteQuestionnaire(questio
 		return err
 	}
 	return err
+
+}
+func (QuestIntrnshp *QuestionnaireInInternshipClass) GetQuestionnaireFromInternship (id int64)  (*Questionnaire, error) {
+	_, err := QuestIntrnshp.internship.GetInternship(id)
+	if err != nil {
+		return nil,err
+	}
+	questionnaires, err:= QuestIntrnshp.Quest.GetQuestionnaireFromInternship(id)
+	if err != nil {
+		return nil, err
+	}
+	return questionnaires, nil
 
 }
 

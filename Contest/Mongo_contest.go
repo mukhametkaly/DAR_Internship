@@ -1,12 +1,13 @@
 package Contest
 
 import (
-	"../internship"
+	"Internship/internship"
 	"context"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"log"
 )
 var (
 	collection *mongo.Collection
@@ -120,4 +121,25 @@ func (cocc *ContestCollectionClass) UpdateContest (contest *Contest)  (*Contest,
 	}
 	return contest,nil
 }
-
+func (cocc *ContestCollectionClass) GetContestFromInternship (id int64)  ([]*Contest, error)  {
+	filter:=bson.D{{"internshipid",id}}
+	options:=options.Find()
+	var contests []*Contest
+	cur, err := collection.Find(context.TODO(), filter, options)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for cur.Next(context.TODO()){
+		var contest Contest
+		err:=cur.Decode(&contest)
+		if err!=nil{
+			return nil,err
+		}
+		contests = append(contests,&contest)
+	}
+	if err:=cur.Err();err!=nil{
+		return nil,err
+	}
+	cur.Close(context.TODO())
+	return contests,nil
+}

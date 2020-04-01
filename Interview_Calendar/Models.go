@@ -6,15 +6,16 @@ type InterviewCalendarCollection interface {
 	GetInterviewCalendar(id int64) (*InterviewCalendar, error)
 	UpdateInterviewCalendar(interviewCalendar *InterviewCalendar) (*InterviewCalendar, error)
 	DeleteInterviewCalendar(interviewCalendar *InterviewCalendar) error
+	GetInternviewCalendarFromCourses (id int64)  ([]*InterviewCalendar, error)
 }
 
 type InterviewCalendar struct {
-	InterviewCalendarID int64 `json:"interviewcalendar_id"`
-	comeDate string `json:"come_date"`
-	comeTime string `json:"cometime"`
-	LecturerMail string `json:"lecturer_mail"`
-	Duration string `json:"duration"`
-	InternMail string `json:"intern_mail"`
-	CourseID int64 `json:"course_id"`
+	InterviewCalendarID int64  `json:"interviewcalendar_id"`
+	ComeDate            string `json:"come_date"`
+	ComeTime            string `json:"come_time"`
+	LecturerMail        string `json:"lecturer_mail"`
+	Duration            string `json:"duration"`
+	InternMail          string `json:"intern_mail"`
+	CourseID            int64  `json:"course_id"`
 
 }

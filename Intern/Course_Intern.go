@@ -1,8 +1,8 @@
 package Intern
 
 import (
-"../Courses"
-"errors"
+	"Internship/Courses"
+	"errors"
 )
 
 
@@ -14,6 +14,7 @@ type CourseIntern interface {
 	GetIntern(id int64)           (*Intern, error)
 	UpdateIntern(intern *Intern) (*Intern, error)
 	DeleteIntern(intern *Intern)            error
+	GetInternsFromCourses (id int64)  ([]*Intern, error)
 }
 
 type CourseInternClass struct {
@@ -30,19 +31,22 @@ func(CoursIntrn *CourseInternClass) CheckIntern (intern *Intern)  (*Intern, erro
 	if intern.Name == "" {
 		return nil, errors.New("No Name ")
 	}
-	if intern.courseID == 0 {
+	if intern.CourseID == 0 {
 		return nil, errors.New("No Course ID ")
 	}
-	if intern.answers[0] == "" {
+	if intern.Answers[0] == "" {
 		return nil, errors.New("No Answers")
 	}
 	if intern.Mail == "" {
 		return nil, errors.New("No mail")
 	}
-	if intern.contestUsername == "" {
+	if intern.ContestUsername == "" {
 		return nil, errors.New("No Contest username")
 	}
-	_, err:=CoursIntrn.courses.GetCourse(intern.courseID)
+	if intern.QuestionnaireID == 0 {
+	return nil, errors.New("No Questionnaire ID")
+	}
+	_, err:=CoursIntrn.courses.GetCourse(intern.CourseID)
 	if err != nil {
 		return nil, err
 	}
@@ -99,6 +103,18 @@ func (CoursIntrn *CourseInternClass) DeleteIntern(intern *Intern)  error {
 		return err
 	}
 	return err
+
+}
+func (CoursIntrn *CourseInternClass) GetInternsFromCourses (id int64)  ([]*Intern, error) {
+	_, err := CoursIntrn.courses.GetCourse(id)
+	if err != nil {
+		return nil,err
+	}
+	interns, err:= CoursIntrn.intern.GetInternsFromCourses(id)
+	if err != nil {
+		return nil, err
+	}
+	return interns, nil
 
 }
 

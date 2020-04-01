@@ -1,12 +1,12 @@
 package Questionnaire
 
 import (
+	"Internship/internship"
 	"context"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"../internship"
 )
 
 
@@ -121,6 +121,20 @@ func (incc *QuestionnaireCollectionClass) UpdateQuestionnaire (questionnaire *Qu
 	}
 	return questionnaire,nil
 }
+
+
+
+func (incc *QuestionnaireCollectionClass) GetQuestionnaireFromInternship (id int64)  (*Questionnaire, error)  {
+	filter:=bson.D{{"internshipid",id}}
+	questionnnaire:=&Questionnaire{}
+	err:=collection.FindOne(context.TODO(),filter).Decode(&questionnnaire)
+	if err!=nil{
+		return nil,err
+	}
+	return questionnnaire,nil
+}
+
+
 
 
 

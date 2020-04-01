@@ -15,6 +15,7 @@ type Endpoints interface {
 	GetIntern(idParam string) func(w http.ResponseWriter,r *http.Request)
 	UpdateIntern(idParam string) func(w http.ResponseWriter,r *http.Request)
 	DeleteIntern(idParam string) func(w http.ResponseWriter,r *http.Request)
+	GetInternsFromCourses (idParam string)  func(w http.ResponseWriter,r *http.Request)
 
 }
 
@@ -156,4 +157,26 @@ func (ef *endpointsFactory) UpdateIntern(idParam string) func(w http.ResponseWri
 		respondJSON(w,http.StatusOK,updated_intern)
 	}
 }
+
+func (ef *endpointsFactory) GetInternsFromCourses (idParam string)  func(w http.ResponseWriter,r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars:=mux.Vars(r)
+		paramid, paramerr:=vars[idParam]
+		if !paramerr{
+			respondJSON(w,http.StatusBadRequest,"Не был передан аргумент")
+			return
+		}
+		id,err:=strconv.ParseInt(paramid,10,10)
+		interns,err:=ef.Intrn.GetInternsFromCourses(id)
+		if err!=nil{
+			respondJSON(w,http.StatusInternalServerError,err.Error())
+			return
+		}
+		respondJSON(w,http.StatusOK,interns)
+	}
+}
+
+
+
+
 

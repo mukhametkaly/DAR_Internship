@@ -6,6 +6,7 @@ type CourseCollection interface {
 	GetCourse(id int64)           (*Courses, error)
 	UpdateCourse(course *Courses) (*Courses, error)
 	DeleteCourse(course *Courses)            error
+	GetCoursesFromInternship (id int64)  ([]*Courses, error)
 }
 
 type Courses struct {

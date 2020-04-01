@@ -6,6 +6,7 @@ type ContestCollection interface {
 	GetContest(id int64) (*Contest, error)
 	UpdateContest(contest *Contest) (*Contest, error)
 	DeleteContest(contest *Contest) error
+	GetContestFromInternship (id int64)  ([]*Contest, error)
 }
 
 type Contest struct {

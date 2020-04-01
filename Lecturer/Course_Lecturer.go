@@ -1,8 +1,10 @@
 package Lecturer
 
 import (
-"../Courses"
-"errors"
+	"Internship/Courses"
+	"errors"
+	"Internship/Veryfing"
+
 )
 
 
@@ -13,6 +15,8 @@ type CourseLecturer interface {
 	GetCourseLecturer(id int64)           (*Lecturer, error)
 	UpdateCourseLecturer(lecturer *Lecturer) (*Lecturer, error)
 	DeleteCourseLecturer(lecturer *Lecturer)            error
+	GetLecturerFromCourses (id int64)  (*Lecturer, error)
+
 }
 
 type CourseLecturerClass struct {
@@ -20,7 +24,7 @@ type CourseLecturerClass struct {
 	courses Courses.CourseCollection
 }
 
-func NewCourseIntern(courscollection Courses.CourseCollection, lectrs Lecturers )  CourseLecturer {
+func NewCourseLecturer(courscollection Courses.CourseCollection, lectrs Lecturers )  CourseLecturer {
 	return &CourseLecturerClass{lecturers:lectrs, courses: courscollection}
 }
 
@@ -29,16 +33,20 @@ func(CoursLec *CourseLecturerClass) CheckCourseLecturer (lecturer *Lecturer)  (*
 	if lecturer.LecturerName == "" {
 		return nil, errors.New("No Lecturer Name ")
 	}
-	if lecturer.mail == "" {
+	if lecturer.Mail == "" {
 		return nil, errors.New("No Lecturer mail")
 	}
-	if lecturer.password == "" {
+	if lecturer.Password == "" {
 		return nil, errors.New("No Password")
 	}
-	if lecturer.courseID == 0 {
+	errs := Veryfing.VerifyPassword(lecturer.Password)
+	if errs != nil {
+		return nil, errs
+	}
+	if lecturer.CourseID == 0 {
 		return nil, errors.New("No Course ID")
 	}
-	_, err:=CoursLec.courses.GetCourse(lecturer.courseID)
+	_, err:=CoursLec.courses.GetCourse(lecturer.CourseID)
 	if err != nil {
 		return nil, err
 	}
@@ -67,6 +75,10 @@ func (CoursLec *CourseLecturerClass)AddCourseLecturer (lecturer *Lecturer)    (*
 	if err != nil {
 		return nil, err
 	}
+	err = CoursLec.SetLecturerInCourse(lecturer.CourseID, lecturer)
+	if err != nil {
+		return nil, err
+	}
 	_, err = CoursLec.lecturers.AddLecturer(lecturer)
 	if err != nil {
 		return nil, err
@@ -87,7 +99,7 @@ func (CoursLec *CourseLecturerClass) UpdateCourseLecturer (lecturer *Lecturer) (
 
 }
 func (CoursLec *CourseLecturerClass) DeleteCourseLecturer (lecturer *Lecturer)  error {
-	if lecturer.LectureID == 0 {
+	if lecturer.LecturerID == 0 {
 		return errors.New("NO ID")
 	}
 	err := CoursLec.lecturers.DeleteLecturer(lecturer)
@@ -97,3 +109,27 @@ func (CoursLec *CourseLecturerClass) DeleteCourseLecturer (lecturer *Lecturer)  
 	return err
 
 }
+func (CoursIntrn *CourseLecturerClass) GetLecturerFromCourses (id int64)  (*Lecturer, error) {
+	_, err := CoursIntrn.courses.GetCourse(id)
+	if err != nil {
+		return nil,err
+	}
+	lecturer, err:= CoursIntrn.lecturers.GetLecturerFromCourses(id)
+	if err != nil {
+		return nil, err
+	}
+	return lecturer, nil
+}
+
+func (CoursIntrn *CourseLecturerClass) SetLecturerInCourse (id int64, lecturer *Lecturer) error{
+	course, err := CoursIntrn.courses.GetCourse(id)
+	if err != nil {
+		return err
+	}
+	course.LecturerMail = lecturer.Mail
+	course.LecturerName = lecturer.LecturerName
+	course.LecturerID = lecturer.LecturerID
+	_, err = CoursIntrn.courses.UpdateCourse(course)
+	return err
+}
+

@@ -14,14 +14,15 @@ type Endpoints interface {
 	GetQuestionnaire(idParam string) func(w http.ResponseWriter,r *http.Request)
 	DeleteQuestionnaire(idParam string) func(w http.ResponseWriter,r *http.Request)
 	UpdateQuestionnaire(idParam string) func(w http.ResponseWriter,r *http.Request)
+	GetQuestionnaireFromInternship (idParam string)  func(w http.ResponseWriter,r *http.Request)
 
 }
 
 type endpointsFactory struct {
-	Questnr QuestionnaireCollection
+	Questnr QuestionnaireInInternship
 }
 
-func NewEndpointsFactory(questnr QuestionnaireCollection) Endpoints{
+func NewEndpointsFactory(questnr QuestionnaireInInternship) Endpoints{
 	return &endpointsFactory{
 		Questnr: questnr,
 	}
@@ -156,3 +157,21 @@ func (ef *endpointsFactory) UpdateQuestionnaire(idParam string) func(w http.Resp
 		respondJSON(w,http.StatusOK,updated_questionnaire)
 	}
 }
+func (ef *endpointsFactory) GetQuestionnaireFromInternship (idParam string)  func(w http.ResponseWriter,r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars:=mux.Vars(r)
+		paramid, paramerr:=vars[idParam]
+		if !paramerr{
+			respondJSON(w,http.StatusBadRequest,"Не был передан аргумент")
+			return
+		}
+		id,err:=strconv.ParseInt(paramid,10,10)
+		questionnaire,err:=ef.Questnr.GetQuestionnaireFromInternship(id)
+		if err!=nil{
+			respondJSON(w,http.StatusInternalServerError,err.Error())
+			return
+		}
+		respondJSON(w,http.StatusOK,questionnaire)
+	}
+}
+

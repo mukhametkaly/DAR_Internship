@@ -6,7 +6,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"../internship"
+	"Internship/internship"
+	"log"
 )
 
 var (
@@ -32,7 +33,7 @@ func NewInternCollection(config Internship.MongoConfig) (InternCollection, error
 	}
 
 	db:=client.Database(config.Database)
-	collection=db.Collection("Intern")
+	collection=db.Collection("Interns")
 	return &InternCollectionClass{dbcon:db,},nil
 }
 
@@ -109,11 +110,12 @@ func (cocc *InternCollectionClass) UpdateIntern (intern *Intern)  (*Intern, erro
 	update:=bson.D{{"$set",bson.D{
 		{"name",intern.Name},
 		{"mail",intern.Mail},
-		{"contestid",intern.contestID},
-		{"courseid", intern.courseID},
-		{"status", intern.status},
-		{"contestscore", intern.contest_score},
-		{"contestusername", intern.contestUsername},
+		{"contestid",intern.ContestID},
+		{"questionnaireid", intern.QuestionnaireID},
+		{"courseid", intern.CourseID},
+		{"status", intern.Status},
+		{"contestscore", intern.ContestScore},
+		{"contestusername", intern.ContestUsername},
 
 	}}}
 	_,err:=collection.UpdateOne(context.TODO(),filter,update)
@@ -121,6 +123,28 @@ func (cocc *InternCollectionClass) UpdateIntern (intern *Intern)  (*Intern, erro
 		return nil,err
 	}
 	return intern,nil
+}
+func (cocc *InternCollectionClass) GetInternsFromCourses (id int64)  ([]*Intern, error)  {
+	filter:=bson.D{{"courseid",id}}
+	options:=options.Find()
+	var interns []*Intern
+	cur, err := collection.Find(context.TODO(), filter, options)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for cur.Next(context.TODO()){
+		var intern Intern
+		err:=cur.Decode(&intern)
+		if err!=nil{
+			return nil,err
+		}
+		interns = append(interns,&intern)
+	}
+	if err:=cur.Err();err!=nil{
+		return nil,err
+	}
+	cur.Close(context.TODO())
+	return interns,nil
 }
 
 

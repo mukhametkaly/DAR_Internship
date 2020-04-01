@@ -1,7 +1,7 @@
 package Courses
 
 import (
-	"../internship"
+	"Internship/internship"
 	 "errors"
 )
 
@@ -14,6 +14,7 @@ type CoursesInInternship interface {
 	GetCourse(id int64)           (*Courses, error)
 	UpdateCourse(course *Courses) (*Courses, error)
 	DeleteCourse(course *Courses)            error
+	GetCoursesFromInternship (id int64)  ([]*Courses, error)
 }
 
 type CoursesInInternshipClass struct {
@@ -25,7 +26,7 @@ func NewCoursesInInternship(intcollection Internship.InternshipCollection, cours
 	return &CoursesInInternshipClass{cours:coursecollection, internship: intcollection}
 }
 
-func(crs_intrnshp *CoursesInInternshipClass) CheckCourse (course *Courses)  (*Courses, error)  {
+func(CrsIntrnship *CoursesInInternshipClass) CheckCourse (course *Courses)  (*Courses, error)  {
 
 	if course.Title == "" {
 		return nil, errors.New("No Title ")
@@ -33,63 +34,75 @@ func(crs_intrnshp *CoursesInInternshipClass) CheckCourse (course *Courses)  (*Co
 	if course.InternshipID == 0 {
 		return nil, errors.New("No Internship ID ")
 	}
-	_, err:=crs_intrnshp.internship.GetInternship(course.InternshipID)
+	_, err:=CrsIntrnship.internship.GetInternship(course.InternshipID)
 	if err != nil {
 		return nil, err
 	}
 	return course, nil
 }
 
-func (crs_intrnshp *CoursesInInternshipClass) GetCourses() ([]*Courses,error) {
-	courses, err:=crs_intrnshp.cours.GetCourses()
+func (CrsIntrnship *CoursesInInternshipClass) GetCourses() ([]*Courses,error) {
+	courses, err:=CrsIntrnship.cours.GetCourses()
 	if err != nil {
 		return nil, err
 	}
 	return courses, err
 }
 
-func (crs_intrnshp *CoursesInInternshipClass) GetCourse(id int64)  (*Courses, error)  {
+func (CrsIntrnship *CoursesInInternshipClass) GetCourse(id int64)  (*Courses, error)  {
 
-	course, err := crs_intrnshp.cours.GetCourse(id)
+	course, err := CrsIntrnship.cours.GetCourse(id)
 	if err!= nil {
 		return nil, err
 	}
 	return course, nil
 }
 
-func (crs_intrnshp *CoursesInInternshipClass)AddCourse (course *Courses)    (*Courses, error) {
-	_, err := crs_intrnshp.CheckCourse(course)
+func (CrsIntrnship *CoursesInInternshipClass)AddCourse (course *Courses)    (*Courses, error) {
+	_, err := CrsIntrnship.CheckCourse(course)
 	if err != nil {
 		return nil, err
 	}
-	_, err = crs_intrnshp.cours.AddCourse(course)
+	_, err = CrsIntrnship.cours.AddCourse(course)
 	if err != nil {
 		return nil, err
 	}
 	return course, nil
 }
 
-func (crs_intrnshp *CoursesInInternshipClass) UpdateCourse(course *Courses) (*Courses, error) {
-	_, err := crs_intrnshp.CheckCourse(course)
+func (CrsIntrnship *CoursesInInternshipClass) UpdateCourse(course *Courses) (*Courses, error) {
+	_, err := CrsIntrnship.CheckCourse(course)
 	if err != nil {
 		return nil, err
 	}
-	_, err = crs_intrnshp.cours.UpdateCourse(course)
+	_, err = CrsIntrnship.cours.UpdateCourse(course)
 	if err != nil {
 		return nil, err
 	}
 	return course, nil
 
 }
-func (crs_intrnshp *CoursesInInternshipClass) DeleteCourse(course *Courses)  error {
+func (CrsIntrnship *CoursesInInternshipClass) DeleteCourse(course *Courses)  error {
 	if course.CourseID == 0 {
 		return errors.New("NO ID")
 	}
-	err := crs_intrnshp.cours.DeleteCourse(course)
+	err := CrsIntrnship.cours.DeleteCourse(course)
 	if err != nil {
 		return err
 	}
 	return err
+
+}
+func (CrsIntrnship *CoursesInInternshipClass) GetCoursesFromInternship (id int64)  ([]*Courses, error) {
+	_, err := CrsIntrnship.internship.GetInternship(id)
+	if err != nil {
+		return nil,err
+	}
+	courses, err:= CrsIntrnship.cours.GetCoursesFromInternship(id)
+	if err != nil {
+		return nil, err
+	}
+	return courses, nil
 
 }
 

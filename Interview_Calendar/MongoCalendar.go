@@ -6,7 +6,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"../internship"
+	"Internship/internship"
+	"log"
 )
 var (
 	collection *mongo.Collection
@@ -104,12 +105,12 @@ func (incc *InterviewCalendarCollectionClass) UpdateInterviewCalendar (interview
 
 	filter:=bson.D{{"interviewcalendarid",interviewCalendar.InterviewCalendarID}}
 	update:=bson.D{{"$set",bson.D{
-		{"come_date",interviewCalendar.comeDate},
-		{"cometime",interviewCalendar.comeTime},
-		{"lecturer_mail",interviewCalendar.LecturerMail},
+		{"comedate",interviewCalendar.ComeDate},
+		{"cometime",interviewCalendar.ComeTime},
+		{"lecturermail",interviewCalendar.LecturerMail},
 		{"duration",interviewCalendar.Duration},
-		{"intern_mail",interviewCalendar.InternMail},
-		{"course_id",interviewCalendar.CourseID},
+		{"internmail",interviewCalendar.InternMail},
+		{"courseid",interviewCalendar.CourseID},
 
 	}}}
 	_,err:=collection.UpdateOne(context.TODO(),filter,update)
@@ -117,5 +118,27 @@ func (incc *InterviewCalendarCollectionClass) UpdateInterviewCalendar (interview
 		return nil,err
 	}
 	return interviewCalendar,nil
+}
+func (incc *InterviewCalendarCollectionClass) GetInternviewCalendarFromCourses (id int64)  ([]*InterviewCalendar, error)  {
+	filter:=bson.D{{"courseid",id}}
+	options:=options.Find()
+	var interviewCalendars []*InterviewCalendar
+	cur, err := collection.Find(context.TODO(), filter, options)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for cur.Next(context.TODO()){
+		var interviewCalendar InterviewCalendar
+		err:=cur.Decode(&interviewCalendars)
+		if err!=nil{
+			return nil,err
+		}
+		interviewCalendars = append(interviewCalendars,&interviewCalendar)
+	}
+	if err:=cur.Err();err!=nil{
+		return nil,err
+	}
+	cur.Close(context.TODO())
+	return interviewCalendars,nil
 }
 

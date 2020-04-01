@@ -14,14 +14,15 @@ type Endpoints interface {
 	GetContest(idParam string) func(w http.ResponseWriter,r *http.Request)
 	UpdateContest(idParam string) func(w http.ResponseWriter,r *http.Request)
 	DeleteContest(idParam string) func(w http.ResponseWriter,r *http.Request)
+	GetContestsFromInternship (idParam string)  func(w http.ResponseWriter,r *http.Request)
 
 }
 
 type endpointsFactory struct {
-	Contst CoursesinInternship
+	Contst ContestsinInternship
 }
 
-func NewEndpointsFactory(contst CoursesinInternship) Endpoints{
+func NewEndpointsFactory(contst ContestsinInternship) Endpoints{
 	return &endpointsFactory{
 		Contst: contst,
 	}
@@ -155,3 +156,24 @@ func (ef *endpointsFactory) UpdateContest(idParam string) func(w http.ResponseWr
 		respondJSON(w,http.StatusOK,updated_contest)
 	}
 }
+
+func (ef *endpointsFactory) GetContestsFromInternship (idParam string)  func(w http.ResponseWriter,r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars:=mux.Vars(r)
+		paramid, paramerr:=vars[idParam]
+		if !paramerr{
+			respondJSON(w,http.StatusBadRequest,"Не был передан аргумент")
+			return
+		}
+		id,err:=strconv.ParseInt(paramid,10,10)
+		interns,err:=ef.Contst.GetContestsFromInternship(id)
+		if err!=nil{
+			respondJSON(w,http.StatusInternalServerError,err.Error())
+			return
+		}
+		respondJSON(w,http.StatusOK,interns)
+	}
+}
+
+
+

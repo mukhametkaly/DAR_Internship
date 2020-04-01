@@ -6,6 +6,7 @@ type QuestionnaireCollection interface {
 	GetQuestionnaire(id int64) (*Questionnaire, error)
 	UpdateQuestionnaire(questionnaire *Questionnaire) (*Questionnaire, error)
 	DeleteQuestionnaire(questionnaire *Questionnaire) error
+	GetQuestionnaireFromInternship (id int64)  (*Questionnaire, error)
 }
 
 type Questionnaire struct {

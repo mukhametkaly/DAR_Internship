@@ -1,13 +1,12 @@
 package Lecturer
 
 import (
+	"Internship/internship"
 	"context"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"../internship"
-
 )
 
 var (
@@ -20,7 +19,7 @@ type LecturersClass struct{
 }
 
 
-func NewInternCollection(config Internship.MongoConfig) (Lecturers, error){
+func NewLecturerCollection(config Internship.MongoConfig) (Lecturers, error){
 
 	clientOptions:=options.Client().ApplyURI("mongodb://"+config.Host+":"+config.Port)
 	client,err := mongo.Connect(context.TODO(),clientOptions)
@@ -68,9 +67,9 @@ func (lec *LecturersClass) AddLecturer(lectrr *Lecturer) (*Lecturer,error){
 	n:=len(lecturers)
 	if n!=0{
 		lecturer:=lecturers[n-1]
-		lectrr.LectureID = lecturer.LectureID+1
+		lectrr.LecturerID = lecturer.LecturerID+1
 	}else{
-		lectrr.LectureID = 1
+		lectrr.LecturerID = 1
 	}
 	insertResult,err:=collection.InsertOne(context.TODO(), lectrr)
 	if err!=nil{
@@ -96,7 +95,7 @@ func (lec *LecturersClass) GetLecturer(id int64) (*Lecturer,error){
 
 func (lec *LecturersClass) DeleteLecturer(lecturer *Lecturer) error{
 
-	filter:=bson.D{{"lecturerid",lecturer.LectureID}}
+	filter:=bson.D{{"lecturerid",lecturer.LecturerID}}
 	_,err:=collection.DeleteOne(context.TODO(),filter)
 	if err!=nil{
 		return err
@@ -106,12 +105,12 @@ func (lec *LecturersClass) DeleteLecturer(lecturer *Lecturer) error{
 
 func (lec *LecturersClass) UpdateLecturer (lecturer *Lecturer)  (*Lecturer, error){
 
-	filter:=bson.D{{"lecturerid",lecturer.LectureID}}
+	filter:=bson.D{{"lecturerid",lecturer.LecturerID}}
 	update:=bson.D{{"$set",bson.D{
 		{"name",lecturer.LecturerName},
-		{"mail",lecturer.mail},
-		{"courseid", lecturer.courseID},
-		{"password", lecturer.password},
+		{"mail",lecturer.Mail},
+		{"courseid", lecturer.CourseID},
+		{"password", lecturer.Password},
 
 	}}}
 	_,err:=collection.UpdateOne(context.TODO(),filter,update)
@@ -120,7 +119,16 @@ func (lec *LecturersClass) UpdateLecturer (lecturer *Lecturer)  (*Lecturer, erro
 	}
 	return lecturer,nil
 }
+func (cocc *LecturersClass) GetLecturerFromCourses (id int64)  (*Lecturer, error)  {
+	filter:=bson.D{{"courseid",id}}
+	lecturer:=&Lecturer{}
+	err:=collection.FindOne(context.TODO(),filter).Decode(&lecturer)
+	if err!=nil{
+		return nil,err
+	}
+	return lecturer,nil
 
+}
 
 
 
