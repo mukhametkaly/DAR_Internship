@@ -15,6 +15,7 @@ type CourseIntern interface {
 	UpdateIntern(intern *Intern) (*Intern, error)
 	DeleteIntern(intern *Intern)            error
 	GetInternsFromCourses (id int64)  ([]*Intern, error)
+	Authorization(username string, password string) error
 }
 
 type CourseInternClass struct {
@@ -75,6 +76,10 @@ func (CoursIntrn *CourseInternClass)AddIntern (intern *Intern)    (*Intern, erro
 	if err != nil {
 		return nil, err
 	}
+	_, err = CoursIntrn.intern.GetInternByUsername(intern.UserName)
+	if err == nil {
+		return nil, errors.New("Intern wiht this username are exists")
+	}
 	_, err = CoursIntrn.intern.AddIntern(intern)
 	if err != nil {
 		return nil, err
@@ -118,6 +123,17 @@ func (CoursIntrn *CourseInternClass) GetInternsFromCourses (id int64)  ([]*Inter
 
 }
 
+func (CoursIntern *CourseInternClass) Authorization(username string, password string) error  {
+    if username == "" {
+    	return errors.New("No username")
+	}
+	if password == "" {
+		return errors.New("No password")
+	}
+	err := CoursIntern.intern.Authorization(username, password)
+	return err
+
+}
 
 
 

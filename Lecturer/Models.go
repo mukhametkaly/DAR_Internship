@@ -7,9 +7,12 @@ type Lecturers interface {
 	UpdateLecturer(lecturer *Lecturer) (*Lecturer, error)
 	DeleteLecturer(lecturer *Lecturer) error
 	GetLecturerFromCourses (id int64)  (*Lecturer, error)
+	GetLecturerByUsername (username string) (*Lecturer, error)
+	Authorization (username string, password string) error
 }
 
 type Lecturer struct {
+	UserName      string `json:"user_name"`
 	LecturerID    int64  `json:"lecturer_id,omitempty"`
 	LecturerName string `json:"name,omitempty"`
 	Mail         string `json:"mail,omitempty"`

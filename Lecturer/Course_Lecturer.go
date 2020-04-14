@@ -16,6 +16,7 @@ type CourseLecturer interface {
 	UpdateCourseLecturer(lecturer *Lecturer) (*Lecturer, error)
 	DeleteCourseLecturer(lecturer *Lecturer)            error
 	GetLecturerFromCourses (id int64)  (*Lecturer, error)
+	Authorization (username string, password string) error
 
 }
 
@@ -71,9 +72,14 @@ func (CoursLec *CourseLecturerClass) GetCourseLecturer(id int64)  (*Lecturer, er
 }
 
 func (CoursLec *CourseLecturerClass)AddCourseLecturer (lecturer *Lecturer)    (*Lecturer, error) {
+
 	_, err := CoursLec.CheckCourseLecturer(lecturer)
 	if err != nil {
 		return nil, err
+	}
+	_, err = CoursLec.lecturers.GetLecturerByUsername(lecturer.UserName)
+	if err == nil {
+		return nil, errors.New("Lecturer wiht this username are exists")
 	}
 	err = CoursLec.SetLecturerInCourse(lecturer.CourseID, lecturer)
 	if err != nil {
@@ -131,5 +137,20 @@ func (CoursIntrn *CourseLecturerClass) SetLecturerInCourse (id int64, lecturer *
 	course.LecturerID = lecturer.LecturerID
 	_, err = CoursIntrn.courses.UpdateCourse(course)
 	return err
+}
+
+func (CoursLec *CourseLecturerClass) Authorization (username string, password string) error {
+	if username == "" {
+		return errors.New("No Username")
+	}
+	if password == "" {
+		return errors.New("No Password")
+	}
+
+	err := CoursLec.lecturers.Authorization(username, password)
+	if err!= nil {
+		return err
+	}
+	return nil
 }
 

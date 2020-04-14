@@ -2,11 +2,16 @@ package Intern
 
 
 import (
+	"Internship/Account"
 	"encoding/json"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
+	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 type Endpoints interface {
@@ -16,6 +21,7 @@ type Endpoints interface {
 	UpdateIntern(idParam string) func(w http.ResponseWriter,r *http.Request)
 	DeleteIntern(idParam string) func(w http.ResponseWriter,r *http.Request)
 	GetInternsFromCourses (idParam string)  func(w http.ResponseWriter,r *http.Request)
+	Authorization ()  func(w http.ResponseWriter,r *http.Request)
 
 }
 
@@ -176,7 +182,43 @@ func (ef *endpointsFactory) GetInternsFromCourses (idParam string)  func(w http.
 	}
 }
 
+func (ef *endpointsFactory) Authorization () func(w http.ResponseWriter,r *http.Request)  {
+	return func(w http.ResponseWriter, r *http.Request) {
+		data,err:=ioutil.ReadAll(r.Body)
+		if err!=nil{
+			respondJSON(w,http.StatusInternalServerError,err.Error())
+			return
+		}
+		account:=&Account.Account{}
+		if err:= json.Unmarshal(data,&account);err!=nil{
+			respondJSON(w,http.StatusBadRequest,err.Error())
+			return
+		}
+		err =ef.Intrn.Authorization(account.UserName, account.Password)
+		if err!=nil{
+			respondJSON(w,http.StatusBadRequest,err.Error())
+			return
+		}
+		log.Println("Hello you are intern --->", account.UserName)
+		w.Header().Add("Content-Type", "application/json")
+		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+			"exp":  time.Now().Add(time.Minute * time.Duration(2)).Unix(),
+			"iat":  time.Now().Unix(),
+		})
+		tokenString, err := token.SignedString([]byte("intern"))
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			io.WriteString(w, `{"error":"token_generation_failed"}`)
+			return
+		}
+		io.WriteString(w, `{"token":"`+tokenString+`"}`)
 
+		respondJSON(w,http.StatusOK, "Hello you are intern")
+
+
+	}
+
+}
 
 
 

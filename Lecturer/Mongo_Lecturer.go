@@ -3,6 +3,7 @@ package Lecturer
 import (
 	"Internship/internship"
 	"context"
+	"errors"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -128,6 +129,26 @@ func (cocc *LecturersClass) GetLecturerFromCourses (id int64)  (*Lecturer, error
 	}
 	return lecturer,nil
 
+}
+func (cocc *LecturersClass) GetLecturerByUsername (username string) (*Lecturer, error){
+	filter:=bson.D{{"username",username}}
+	lecturer:=&Lecturer{}
+	err:=collection.FindOne(context.TODO(),filter).Decode(&lecturer)
+	if err!=nil{
+		return nil, err
+	}
+	return lecturer,nil
+}
+
+func (cocc *LecturersClass) Authorization (username string, password string) error  {
+	lecturer, err := cocc.GetLecturerByUsername(username)
+	if err!=nil{
+		return errors.New("Invalid username")
+	}
+	if lecturer.Password != password {
+		return errors.New("Invalid password")
+	}
+	return nil
 }
 
 

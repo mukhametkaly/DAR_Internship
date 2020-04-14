@@ -2,6 +2,7 @@ package Intern
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -110,6 +111,7 @@ func (cocc *InternCollectionClass) UpdateIntern (intern *Intern)  (*Intern, erro
 	update:=bson.D{{"$set",bson.D{
 		{"name",intern.Name},
 		{"mail",intern.Mail},
+		{"password", intern.Password},
 		{"contestid",intern.ContestID},
 		{"questionnaireid", intern.QuestionnaireID},
 		{"courseid", intern.CourseID},
@@ -147,5 +149,28 @@ func (cocc *InternCollectionClass) GetInternsFromCourses (id int64)  ([]*Intern,
 	return interns,nil
 }
 
+func (cocc *InternCollectionClass) GetInternByUsername (username string) (*Intern, error)  {
+
+	filter:=bson.D{{"username",username}}
+	intern:=&Intern{}
+	err:=collection.FindOne(context.TODO(),filter).Decode(&intern)
+	if err!=nil{
+		return nil, err
+	}
+	return intern, nil
+
+}
+
+func (cocc *InternCollectionClass) Authorization (username string, password string )  error{
+	intern, err := cocc.GetInternByUsername(username)
+	if err != nil {
+		return errors.New("Invalid username")
+	}
+	if intern.Password != password {
+		return errors.New("Invalid password")
+	}
+	return nil
+
+}
 
 
