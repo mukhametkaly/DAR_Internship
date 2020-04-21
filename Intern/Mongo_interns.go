@@ -176,7 +176,7 @@ func (cocc *InternCollectionClass) Authorization (username string, password stri
 	}
 	tokenString := Account.CreateToken()
 	value := "I " + strconv.FormatInt(intern.InternID, 10)
-	client.Set(tokenString, value, time.Minute * 3)
+	client.Set(tokenString, value, time.Minute * 20)
 	data := strings.Split(client.Get(tokenString).String(), " ")
 	fmt.Println(data[2])
 	pong, err := client.Ping().Result()

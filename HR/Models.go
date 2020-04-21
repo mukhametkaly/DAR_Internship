@@ -51,7 +51,7 @@ func NewHRCollection(config Internship.MongoConfig) (HRCollection, error){
 	}
 
 	db:=client.Database(config.Database)
-	collection=db.Collection("Interns")
+	collection=db.Collection("HR")
 	return &HRCollectionClass{dbcon:db,},nil
 }
 
@@ -120,7 +120,7 @@ func (hrcc *HRCollectionClass) Authorization (username string, password string, 
 
 	tokenString := Account.CreateToken()
 	value := "HR"
-	client.Set(tokenString, value, time.Minute * 3)
+	client.Set(tokenString, value, time.Minute * 20)
 	data := strings.Split(client.Get(tokenString).String(), " ")
 	fmt.Println(data[2])
 	pong, err := client.Ping().Result()

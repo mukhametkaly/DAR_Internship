@@ -15,10 +15,10 @@ import (
 type Endpoints interface {
 	AddIntern() func(w http.ResponseWriter,r *http.Request)
 	GetInterns(client *redis.Client) func(w http.ResponseWriter,r *http.Request)
-	GetIntern(idParam string, client *redis.Client, cccl *Courses.CourseCollectionClass) func(w http.ResponseWriter,r *http.Request)
+	GetIntern(idParam string, client *redis.Client, cc Courses.CourseCollection) func(w http.ResponseWriter,r *http.Request)
 	UpdateIntern(idParam string, client *redis.Client) func(w http.ResponseWriter,r *http.Request)
 	DeleteIntern(idParam string, client *redis.Client) func(w http.ResponseWriter,r *http.Request)
-	GetInternsFromCourses (idParam string, client *redis.Client, cccl *Courses.CourseCollectionClass)  func(w http.ResponseWriter,r *http.Request)
+	GetInternsFromCourses (idParam string, client *redis.Client, cc Courses.CourseCollection)  func(w http.ResponseWriter,r *http.Request)
 	Authorization (client *redis.Client)  func(w http.ResponseWriter,r *http.Request)
 
 }
@@ -85,7 +85,7 @@ func (ef *endpointsFactory) AddIntern() func(w http.ResponseWriter,r *http.Reque
 	}
 }
 
-func (ef *endpointsFactory) GetIntern(idParam string, client *redis.Client, cccl *Courses.CourseCollection) func(w http.ResponseWriter,r *http.Request) {
+func (ef *endpointsFactory) GetIntern(idParam string, client *redis.Client, cc Courses.CourseCollection) func(w http.ResponseWriter,r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		reqToken := strings.Split(r.Header.Get("Authorization"), " ")
 		data, _ := client.Get(reqToken[1]).Result()
@@ -105,7 +105,7 @@ func (ef *endpointsFactory) GetIntern(idParam string, client *redis.Client, cccl
 			return
 		}
 
-		course, err := cccl.GetCourse(intern.InternID)
+		course, err := cc.GetCourse(intern.InternID)
 		if err != nil {
 			respondJSON(w,http.StatusInternalServerError,err.Error())
 			return
@@ -209,7 +209,7 @@ func (ef *endpointsFactory) UpdateIntern(idParam string, client *redis.Client) f
 	}
 }
 
-func (ef *endpointsFactory) GetInternsFromCourses (idParam string, client *redis.Client, cccl *Courses.CourseCollectionClass)  func(w http.ResponseWriter,r *http.Request) {
+func (ef *endpointsFactory) GetInternsFromCourses (idParam string, client *redis.Client, cc Courses.CourseCollection)  func(w http.ResponseWriter,r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		reqToken := strings.Split(r.Header.Get("Authorization"), " ")
 		data, _ := client.Get(reqToken[1]).Result()
@@ -227,7 +227,7 @@ func (ef *endpointsFactory) GetInternsFromCourses (idParam string, client *redis
 			respondJSON(w,http.StatusInternalServerError,err.Error())
 			return
 		}
-		course, err := cccl.GetCourse(id)
+		course, err := cc.GetCourse(id)
 		if err != nil {
 			respondJSON(w,http.StatusInternalServerError,err.Error())
 			return

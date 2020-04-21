@@ -7,7 +7,6 @@ import (
 	"github.com/mukhametkaly/DAR_Internship/Account"
 	"io/ioutil"
 	"net/http"
-	"strconv"
 	"strings"
 )
 
@@ -15,7 +14,7 @@ import (
 type Endpoints interface {
 	AddHR(client *redis.Client) func(w http.ResponseWriter,r *http.Request)
 	UpdateHR(client *redis.Client) func(w http.ResponseWriter,r *http.Request)
-	DeleteHR(client *redis.Client) func(w http.ResponseWriter,r *http.Request)
+	DeleteHR(username string, client *redis.Client) func(w http.ResponseWriter,r *http.Request)
 	Authorization (client *redis.Client)  func(w http.ResponseWriter,r *http.Request)
 }
 

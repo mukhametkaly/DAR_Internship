@@ -64,8 +64,8 @@ func (ef *endpointsFactory) GetLecturers(client *redis.Client) func(w http.Respo
 func (ef *endpointsFactory) AddLecturer(client *redis.Client) func(w http.ResponseWriter,r *http.Request){
 	return func(w http.ResponseWriter,r *http.Request){
 		reqToken := strings.Split(r.Header.Get("Authorization"), " ")
-		data, _ := client.Get(reqToken[1]).Result()
-		roleAndId := strings.Split(data, " ")
+		RedisData, _ := client.Get(reqToken[1]).Result()
+		roleAndId := strings.Split(RedisData, " ")
 		if roleAndId[0] != "HR"{
 			http.Error(w, "StatusBadRequest", http.StatusBadRequest)
 			return

@@ -20,35 +20,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="96b88569-1ea0-4586-93c2-28d4ec1af3eb" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/Account/AuthMethods.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/HR/HR_Endpoints.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/HR/Models.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Account/AuthMiddleware.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Account/Model.go" beforeDir="false" afterPath="$PROJECT_DIR$/Account/Model.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Contest/Contest_endpoints.go" beforeDir="false" afterPath="$PROJECT_DIR$/Contest/Contest_endpoints.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Contest/Contets_to_Internship.go" beforeDir="false" afterPath="$PROJECT_DIR$/Contest/Contets_to_Internship.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Contest/Mongo_contest.go" beforeDir="false" afterPath="$PROJECT_DIR$/Contest/Mongo_contest.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Courses/Course_Endpoints.go" beforeDir="false" afterPath="$PROJECT_DIR$/Courses/Course_Endpoints.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Courses/Course_in_Internship.go" beforeDir="false" afterPath="$PROJECT_DIR$/Courses/Course_in_Internship.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Courses/Mongo_Courses.go" beforeDir="false" afterPath="$PROJECT_DIR$/Courses/Mongo_Courses.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Intern/Course_Intern.go" beforeDir="false" afterPath="$PROJECT_DIR$/Intern/Course_Intern.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/HR/HR_Endpoints.go" beforeDir="false" afterPath="$PROJECT_DIR$/HR/HR_Endpoints.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/HR/Models.go" beforeDir="false" afterPath="$PROJECT_DIR$/HR/Models.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Intern/Intern_endpoints.go" beforeDir="false" afterPath="$PROJECT_DIR$/Intern/Intern_endpoints.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Intern/Models.go" beforeDir="false" afterPath="$PROJECT_DIR$/Intern/Models.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Intern/Mongo_interns.go" beforeDir="false" afterPath="$PROJECT_DIR$/Intern/Mongo_interns.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Interview_Calendar/Calendar_Endpoints.go" beforeDir="false" afterPath="$PROJECT_DIR$/Interview_Calendar/Calendar_Endpoints.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Interview_Calendar/Course_Interviews.go" beforeDir="false" afterPath="$PROJECT_DIR$/Interview_Calendar/Course_Interviews.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Interview_Calendar/Models.go" beforeDir="false" afterPath="$PROJECT_DIR$/Interview_Calendar/Models.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Interview_Calendar/MongoCalendar.go" beforeDir="false" afterPath="$PROJECT_DIR$/Interview_Calendar/MongoCalendar.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lecturer/Course_Lecturer.go" beforeDir="false" afterPath="$PROJECT_DIR$/Lecturer/Course_Lecturer.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Lecturer/Lecturer_Endpoints.go" beforeDir="false" afterPath="$PROJECT_DIR$/Lecturer/Lecturer_Endpoints.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lecturer/Models.go" beforeDir="false" afterPath="$PROJECT_DIR$/Lecturer/Models.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Lecturer/Mongo_Lecturer.go" beforeDir="false" afterPath="$PROJECT_DIR$/Lecturer/Mongo_Lecturer.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Questionnaire/Mongo_Questionnaire.go" beforeDir="false" afterPath="$PROJECT_DIR$/Questionnaire/Mongo_Questionnaire.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Questionnaire/Questionnaire_Endpoints.go" beforeDir="false" afterPath="$PROJECT_DIR$/Questionnaire/Questionnaire_Endpoints.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Questionnaire/Questionnaire_to_Internship.go" beforeDir="false" afterPath="$PROJECT_DIR$/Questionnaire/Questionnaire_to_Internship.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internship/Internship_Endpoints.go" beforeDir="false" afterPath="$PROJECT_DIR$/internship/Internship_Endpoints.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/main.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -171,6 +149,10 @@
           <url>file://$PROJECT_DIR$/Intern/Intern_endpoints.go</url>
           <line>7</line>
           <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/HR/HR_Endpoints.go</url>
+          <option name="timeStamp" value="2" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

@@ -164,7 +164,7 @@ func (cocc *LecturersClass) Authorization (username string, password string, cli
 
 	tokenString := Account.CreateToken()
 	value := "L " + strconv.FormatInt(lecturer.LecturerID, 10)
-	client.Set(tokenString, value, time.Minute * 3)
+	client.Set(tokenString, value, time.Minute * 20)
 	data := strings.Split(client.Get(tokenString).String(), " ")
 	fmt.Println(data[2])
 	pong, err := client.Ping().Result()
