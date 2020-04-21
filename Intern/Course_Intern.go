@@ -1,8 +1,9 @@
 package Intern
 
 import (
-	"Internship/Courses"
 	"errors"
+	"github.com/go-redis/redis"
+	"github.com/mukhametkaly/DAR_Internship/Courses"
 )
 
 
@@ -15,7 +16,7 @@ type CourseIntern interface {
 	UpdateIntern(intern *Intern) (*Intern, error)
 	DeleteIntern(intern *Intern)            error
 	GetInternsFromCourses (id int64)  ([]*Intern, error)
-	Authorization(username string, password string) error
+	Authorization(username string, password string, client *redis.Client) error
 }
 
 type CourseInternClass struct {
@@ -123,14 +124,14 @@ func (CoursIntrn *CourseInternClass) GetInternsFromCourses (id int64)  ([]*Inter
 
 }
 
-func (CoursIntern *CourseInternClass) Authorization(username string, password string) error  {
+func (CoursIntern *CourseInternClass) Authorization(username string, password string, client *redis.Client) error  {
     if username == "" {
     	return errors.New("No username")
 	}
 	if password == "" {
 		return errors.New("No password")
 	}
-	err := CoursIntern.intern.Authorization(username, password)
+	err := CoursIntern.intern.Authorization(username, password, client)
 	return err
 
 }

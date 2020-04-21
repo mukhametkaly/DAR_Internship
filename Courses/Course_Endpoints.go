@@ -2,19 +2,21 @@ package Courses
 
 import (
 	"encoding/json"
+	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type Endpoints interface {
-	AddCourse() func(w http.ResponseWriter,r *http.Request)
-	GetCourses() func(w http.ResponseWriter,r *http.Request)
-	GetCourse(idParam string) func(w http.ResponseWriter,r *http.Request)
-	UpdateCourse(idParam string) func(w http.ResponseWriter,r *http.Request)
-	DeleteCourse(idParam string) func(w http.ResponseWriter,r *http.Request)
-	GetCoursesFromInternship (idParam string)  func(w http.ResponseWriter,r *http.Request)
+	AddCourse(client *redis.Client) func(w http.ResponseWriter,r *http.Request)
+	GetCourses(client *redis.Client) func(w http.ResponseWriter,r *http.Request)
+	GetCourse(idParam string, client *redis.Client) func(w http.ResponseWriter,r *http.Request)
+	UpdateCourse(idParam string, client *redis.Client) func(w http.ResponseWriter,r *http.Request)
+	DeleteCourse(idParam string, client *redis.Client) func(w http.ResponseWriter,r *http.Request)
+	GetCoursesFromInternship (idParam string, client *redis.Client)  func(w http.ResponseWriter,r *http.Request)
 
 }
 
@@ -40,19 +42,37 @@ func respondJSON(w http.ResponseWriter, status int, payload interface{}) {
 	w.Write([]byte(response))
 }
 
-func (ef *endpointsFactory) GetCourses() func(w http.ResponseWriter,r *http.Request){
+func (ef *endpointsFactory) GetCourses(client *redis.Client) func(w http.ResponseWriter,r *http.Request){
 	return func(w http.ResponseWriter,r *http.Request){
+		reqToken := strings.Split(r.Header.Get("Authorization"), " ")
+		data, _ := client.Get(reqToken[1]).Result()
+		roleAndId := strings.Split(data, " ")
+		if roleAndId[0] != "HR"{
+			http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+			return
+		}
 		course, err := ef.CrsInIntrnshp.GetCourses()
 		if err != nil {
 			respondJSON(w, http.StatusInternalServerError, "Ошибка"+err.Error())
 			return
 		}
+
+
+
+
 		respondJSON(w, http.StatusOK, course)
 	}
 }
 
-func (ef *endpointsFactory) AddCourse() func(w http.ResponseWriter,r *http.Request){
+func (ef *endpointsFactory) AddCourse(client *redis.Client) func(w http.ResponseWriter,r *http.Request){
 	return func(w http.ResponseWriter,r *http.Request){
+		reqToken := strings.Split(r.Header.Get("Authorization"), " ")
+		RedisData, _ := client.Get(reqToken[1]).Result()
+		roleAndId := strings.Split(RedisData, " ")
+		if roleAndId[0] != "HR"{
+			http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+			return
+		}
 		data,err:=ioutil.ReadAll(r.Body)
 		if err!=nil{
 			respondJSON(w,http.StatusInternalServerError,err.Error())
@@ -73,8 +93,12 @@ func (ef *endpointsFactory) AddCourse() func(w http.ResponseWriter,r *http.Reque
 	}
 }
 
-func (ef *endpointsFactory) GetCourse(idParam string) func(w http.ResponseWriter,r *http.Request) {
+func (ef *endpointsFactory) GetCourse(idParam string, client *redis.Client) func(w http.ResponseWriter,r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		reqToken := strings.Split(r.Header.Get("Authorization"), " ")
+		RedisData, _ := client.Get(reqToken[1]).Result()
+		roleAndId := strings.Split(RedisData, " ")
+
 		vars:=mux.Vars(r)
 		paramid, paramerr:=vars[idParam]
 		if !paramerr{
@@ -87,13 +111,31 @@ func (ef *endpointsFactory) GetCourse(idParam string) func(w http.ResponseWriter
 			respondJSON(w,http.StatusInternalServerError,err.Error())
 			return
 		}
+		if roleAndId[0] != "HR"{
+			if roleAndId[0] != "L" {
+				http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+				return
+			} else if roleAndId[1] != strconv.FormatInt(course.LecturerID, 10) {
+				http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+				return
+			}
+		}
+
+
 		respondJSON(w,http.StatusOK,course)
 	}
 }
 
 
-func (ef *endpointsFactory) DeleteCourse(idParam string) func(w http.ResponseWriter,r *http.Request){
+func (ef *endpointsFactory) DeleteCourse(idParam string, client *redis.Client) func(w http.ResponseWriter,r *http.Request){
 	return func(w http.ResponseWriter,r *http.Request){
+		reqToken := strings.Split(r.Header.Get("Authorization"), " ")
+		data, _ := client.Get(reqToken[1]).Result()
+		roleAndId := strings.Split(data, " ")
+		if roleAndId[0] != "HR"{
+			http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+			return
+		}
 		vars:=mux.Vars(r)
 		paramid,paramerr:=vars[idParam]
 		if !paramerr{
@@ -121,8 +163,15 @@ func (ef *endpointsFactory) DeleteCourse(idParam string) func(w http.ResponseWri
 }
 
 
-func (ef *endpointsFactory) UpdateCourse(idParam string) func(w http.ResponseWriter,r *http.Request){
+func (ef *endpointsFactory) UpdateCourse(idParam string, client *redis.Client) func(w http.ResponseWriter,r *http.Request){
 	return func(w http.ResponseWriter,r *http.Request){
+		reqToken := strings.Split(r.Header.Get("Authorization"), " ")
+		RedisData, _ := client.Get(reqToken[1]).Result()
+		roleAndId := strings.Split(RedisData, " ")
+		if roleAndId[0] != "HR"{
+			http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+			return
+		}
 		vars:=mux.Vars(r)
 		paramid,paramerr:=vars[idParam]
 		if !paramerr{
@@ -158,8 +207,15 @@ func (ef *endpointsFactory) UpdateCourse(idParam string) func(w http.ResponseWri
 }
 
 
-func (ef *endpointsFactory) GetCoursesFromInternship (idParam string)  func(w http.ResponseWriter,r *http.Request) {
+func (ef *endpointsFactory) GetCoursesFromInternship (idParam string, client *redis.Client)  func(w http.ResponseWriter,r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		reqToken := strings.Split(r.Header.Get("Authorization"), " ")
+		data, _ := client.Get(reqToken[1]).Result()
+		roleAndId := strings.Split(data, " ")
+		if roleAndId[0] != "HR"{
+			http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+			return
+		}
 		vars:=mux.Vars(r)
 		paramid, paramerr:=vars[idParam]
 		if !paramerr{

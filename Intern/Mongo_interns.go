@@ -4,11 +4,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/go-redis/redis"
+	"github.com/mukhametkaly/DAR_Internship/Account"
+	"github.com/mukhametkaly/DAR_Internship/internship"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"Internship/internship"
 	"log"
+	"strconv"
+	"strings"
+	"time"
 )
 
 var (
@@ -161,16 +166,27 @@ func (cocc *InternCollectionClass) GetInternByUsername (username string) (*Inter
 
 }
 
-func (cocc *InternCollectionClass) Authorization (username string, password string )  error{
+func (cocc *InternCollectionClass) Authorization (username string, password string, client *redis.Client )  error{
 	intern, err := cocc.GetInternByUsername(username)
-	if err != nil {
-		return errors.New("Invalid username")
+	if err!=nil{
+		return  errors.New("Invalid username")
 	}
 	if intern.Password != password {
 		return errors.New("Invalid password")
 	}
-	return nil
+	tokenString := Account.CreateToken()
+	value := "I " + strconv.FormatInt(intern.InternID, 10)
+	client.Set(tokenString, value, time.Minute * 3)
+	data := strings.Split(client.Get(tokenString).String(), " ")
+	fmt.Println(data[2])
+	pong, err := client.Ping().Result()
+	if err != nil {
+		return err
+	}
 
+	fmt.Println(pong, err)
+	fmt.Println(tokenString+" "+value)
+	return nil
 }
 
 

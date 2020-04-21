@@ -1,10 +1,10 @@
 package Lecturer
 
 import (
-	"Internship/Courses"
 	"errors"
-	"Internship/Veryfing"
-
+	"github.com/go-redis/redis"
+	"github.com/mukhametkaly/DAR_Internship/Courses"
+	"github.com/mukhametkaly/DAR_Internship/Veryfing"
 )
 
 
@@ -16,7 +16,7 @@ type CourseLecturer interface {
 	UpdateCourseLecturer(lecturer *Lecturer) (*Lecturer, error)
 	DeleteCourseLecturer(lecturer *Lecturer)            error
 	GetLecturerFromCourses (id int64)  (*Lecturer, error)
-	Authorization (username string, password string) error
+	Authorization (username string, password string, client *redis.Client) error
 
 }
 
@@ -139,15 +139,15 @@ func (CoursIntrn *CourseLecturerClass) SetLecturerInCourse (id int64, lecturer *
 	return err
 }
 
-func (CoursLec *CourseLecturerClass) Authorization (username string, password string) error {
+func (CoursLec *CourseLecturerClass) Authorization (username string, password string, client *redis.Client)  error {
 	if username == "" {
-		return errors.New("No Username")
+		return  errors.New("No Username")
 	}
 	if password == "" {
-		return errors.New("No Password")
+		return  errors.New("No Password")
 	}
 
-	err := CoursLec.lecturers.Authorization(username, password)
+	err := CoursLec.lecturers.Authorization(username, password, client)
 	if err!= nil {
 		return err
 	}

@@ -1,26 +1,24 @@
 package Lecturer
 
 import (
-	"Internship/Account"
 	"encoding/json"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
-	"io"
+	"github.com/mukhametkaly/DAR_Internship/Account"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strconv"
-	"time"
+	"strings"
 )
 
 type Endpoints interface {
-	AddLecturer() func(w http.ResponseWriter,r *http.Request)
-	GetLecturers() func(w http.ResponseWriter,r *http.Request)
-	GetLecturer(idParam string) func(w http.ResponseWriter,r *http.Request)
-	UpdateLecturer(idParam string) func(w http.ResponseWriter,r *http.Request)
-	DeleteLecturer(idParam string) func(w http.ResponseWriter,r *http.Request)
-	GetLecturerFromCourses (idParam string)  func(w http.ResponseWriter,r *http.Request)
-	Authorization ()  func(w http.ResponseWriter,r *http.Request)
+	AddLecturer(client *redis.Client) func(w http.ResponseWriter,r *http.Request)
+	GetLecturers(client *redis.Client) func(w http.ResponseWriter,r *http.Request)
+	GetLecturer(idParam string, client *redis.Client) func(w http.ResponseWriter,r *http.Request)
+	UpdateLecturer(idParam string, client *redis.Client) func(w http.ResponseWriter,r *http.Request)
+	DeleteLecturer(idParam string, client *redis.Client) func(w http.ResponseWriter,r *http.Request)
+	GetLecturerFromCourses (idParam string, client *redis.Client)  func(w http.ResponseWriter,r *http.Request)
+	Authorization (client *redis.Client)  func(w http.ResponseWriter,r *http.Request)
 }
 
 type endpointsFactory struct {
@@ -45,8 +43,15 @@ func respondJSON(w http.ResponseWriter, status int, payload interface{}) {
 	w.Write([]byte(response))
 }
 
-func (ef *endpointsFactory) GetLecturers() func(w http.ResponseWriter,r *http.Request){
+func (ef *endpointsFactory) GetLecturers(client *redis.Client) func(w http.ResponseWriter,r *http.Request){
 	return func(w http.ResponseWriter,r *http.Request){
+		reqToken := strings.Split(r.Header.Get("Authorization"), " ")
+		data, _ := client.Get(reqToken[1]).Result()
+		roleAndId := strings.Split(data, " ")
+		if roleAndId[0] != "HR"{
+			http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+			return
+		}
 		course, err := ef.Lectrs.GetCourseLecturers()
 		if err != nil {
 			respondJSON(w, http.StatusInternalServerError, "Ошибка"+err.Error())
@@ -56,8 +61,15 @@ func (ef *endpointsFactory) GetLecturers() func(w http.ResponseWriter,r *http.Re
 	}
 }
 
-func (ef *endpointsFactory) AddLecturer() func(w http.ResponseWriter,r *http.Request){
+func (ef *endpointsFactory) AddLecturer(client *redis.Client) func(w http.ResponseWriter,r *http.Request){
 	return func(w http.ResponseWriter,r *http.Request){
+		reqToken := strings.Split(r.Header.Get("Authorization"), " ")
+		data, _ := client.Get(reqToken[1]).Result()
+		roleAndId := strings.Split(data, " ")
+		if roleAndId[0] != "HR"{
+			http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+			return
+		}
 		data,err:=ioutil.ReadAll(r.Body)
 		if err!=nil{
 			respondJSON(w,http.StatusInternalServerError,err.Error())
@@ -77,14 +89,29 @@ func (ef *endpointsFactory) AddLecturer() func(w http.ResponseWriter,r *http.Req
 	}
 }
 
-func (ef *endpointsFactory) GetLecturer(idParam string) func(w http.ResponseWriter,r *http.Request) {
+func (ef *endpointsFactory) GetLecturer(idParam string, client *redis.Client) func(w http.ResponseWriter,r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+
+		reqToken := strings.Split(r.Header.Get("Authorization"), " ")
+		data, _ := client.Get(reqToken[1]).Result()
+		roleAndId := strings.Split(data, " ")
+
 		vars:=mux.Vars(r)
 		paramid, paramerr:=vars[idParam]
 		if !paramerr{
 			respondJSON(w,http.StatusBadRequest,"Не был передан аргумент")
 			return
 		}
+		if roleAndId[0] != "HR"{
+			if roleAndId[0] != "L" {
+				http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+				return
+			} else if roleAndId[1] != paramid {
+				http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+				return
+			}
+		}
+
 		id,err:=strconv.ParseInt(paramid,10,10)
 		lecturer,err:=ef.Lectrs.GetCourseLecturer(id)
 		if err!=nil{
@@ -96,8 +123,15 @@ func (ef *endpointsFactory) GetLecturer(idParam string) func(w http.ResponseWrit
 }
 
 
-func (ef *endpointsFactory) DeleteLecturer(idParam string) func(w http.ResponseWriter,r *http.Request){
+func (ef *endpointsFactory) DeleteLecturer(idParam string, client *redis.Client) func(w http.ResponseWriter,r *http.Request){
 	return func(w http.ResponseWriter,r *http.Request){
+		reqToken := strings.Split(r.Header.Get("Authorization"), " ")
+		data, _ := client.Get(reqToken[1]).Result()
+		roleAndId := strings.Split(data, " ")
+		if roleAndId[0] != "HR"{
+			http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+			return
+		}
 		vars:=mux.Vars(r)
 		paramid,paramerr:=vars[idParam]
 		if !paramerr{
@@ -125,14 +159,28 @@ func (ef *endpointsFactory) DeleteLecturer(idParam string) func(w http.ResponseW
 }
 
 
-func (ef *endpointsFactory) UpdateLecturer(idParam string) func(w http.ResponseWriter,r *http.Request){
+func (ef *endpointsFactory) UpdateLecturer(idParam string, client *redis.Client) func(w http.ResponseWriter,r *http.Request){
 	return func(w http.ResponseWriter,r *http.Request){
+		reqToken := strings.Split(r.Header.Get("Authorization"), " ")
+		data, _ := client.Get(reqToken[1]).Result()
+		roleAndId := strings.Split(data, " ")
 		vars:=mux.Vars(r)
-		paramid,paramerr:=vars[idParam]
+		paramid, paramerr:=vars[idParam]
 		if !paramerr{
 			respondJSON(w,http.StatusBadRequest,"Не был передан аргумент")
 			return
 		}
+
+		if roleAndId[0] != "HR"{
+			if roleAndId[0] != "L" {
+				http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+				return
+			} else if roleAndId[1] != paramid {
+				http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+				return
+			}
+		}
+
 		id,err:=strconv.ParseInt(paramid,10,10)
 		if err!=nil{
 			respondJSON(w,http.StatusBadRequest,err.Error())
@@ -143,12 +191,12 @@ func (ef *endpointsFactory) UpdateLecturer(idParam string) func(w http.ResponseW
 			respondJSON(w,http.StatusInternalServerError,err.Error())
 			return
 		}
-		data,err:=ioutil.ReadAll(r.Body)
+		LecData,err:=ioutil.ReadAll(r.Body)
 		if err!=nil{
 			respondJSON(w,http.StatusInternalServerError,err.Error())
 			return
 		}
-		if err:=json.Unmarshal(data,&lecturer);err!=nil{
+		if err:=json.Unmarshal(LecData,&lecturer);err!=nil{
 			respondJSON(w,http.StatusInternalServerError,err.Error())
 			return
 		}
@@ -161,14 +209,23 @@ func (ef *endpointsFactory) UpdateLecturer(idParam string) func(w http.ResponseW
 	}
 }
 
-func (ef *endpointsFactory) GetLecturerFromCourses (idParam string)  func(w http.ResponseWriter,r *http.Request) {
+func (ef *endpointsFactory) GetLecturerFromCourses (idParam string, client *redis.Client)  func(w http.ResponseWriter,r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		reqToken := strings.Split(r.Header.Get("Authorization"), " ")
+		data, _ := client.Get(reqToken[1]).Result()
+		roleAndId := strings.Split(data, " ")
+		if  roleAndId[0] != "HR"{
+
+			http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+			return
+		}
 		vars:=mux.Vars(r)
 		paramid, paramerr:=vars[idParam]
 		if !paramerr{
 			respondJSON(w,http.StatusBadRequest,"Не был передан аргумент")
 			return
 		}
+
 		id,err:=strconv.ParseInt(paramid,10,10)
 		lecturer,err:=ef.Lectrs.GetLecturerFromCourses(id)
 		if err!=nil{
@@ -179,7 +236,7 @@ func (ef *endpointsFactory) GetLecturerFromCourses (idParam string)  func(w http
 	}
 }
 
-func (ef *endpointsFactory) Authorization () func(w http.ResponseWriter,r *http.Request)  {
+func (ef *endpointsFactory) Authorization (client *redis.Client) func(w http.ResponseWriter,r *http.Request)  {
 	return func(w http.ResponseWriter, r *http.Request) {
 		data,err:=ioutil.ReadAll(r.Body)
 		if err!=nil{
@@ -191,27 +248,13 @@ func (ef *endpointsFactory) Authorization () func(w http.ResponseWriter,r *http.
 			respondJSON(w,http.StatusBadRequest,err.Error())
 			return
 		}
-		err =ef.Lectrs.Authorization(account.UserName, account.Password)
+		err =ef.Lectrs.Authorization(account.UserName, account.Password, client)
 		if err!=nil{
 			respondJSON(w,http.StatusBadRequest,err.Error())
 			return
 		}
-		log.Println("Hello you are lecturer --->", account.UserName)
-		w.Header().Add("Content-Type", "application/json")
-		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-			"exp":  time.Now().Add(time.Minute * time.Duration(2)).Unix(),
-			"iat":  time.Now().Unix(),
-		})
-		tokenString, err := token.SignedString([]byte("lecturer"))
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			io.WriteString(w, `{"error":"token_generation_failed"}`)
-			return
-		}
-		io.WriteString(w, `{"token":"`+tokenString+`"}`)
 
 		respondJSON(w,http.StatusOK, "Hello you are lecturer")
-
 
 	}
 

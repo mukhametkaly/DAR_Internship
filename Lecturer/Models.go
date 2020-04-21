@@ -1,5 +1,7 @@
 package Lecturer
 
+import "github.com/go-redis/redis"
+
 type Lecturers interface {
 	AddLecturer(lecturer *Lecturer) (*Lecturer, error)
 	GetLecturers() ([]*Lecturer,error)
@@ -8,7 +10,7 @@ type Lecturers interface {
 	DeleteLecturer(lecturer *Lecturer) error
 	GetLecturerFromCourses (id int64)  (*Lecturer, error)
 	GetLecturerByUsername (username string) (*Lecturer, error)
-	Authorization (username string, password string) error
+	Authorization (username string, password string, client *redis.Client) error
 }
 
 type Lecturer struct {

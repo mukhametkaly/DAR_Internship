@@ -1,9 +1,9 @@
 package Questionnaire
 
 import (
-	"Internship/internship"
 	"context"
 	"fmt"
+	"github.com/mukhametkaly/DAR_Internship/internship"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"

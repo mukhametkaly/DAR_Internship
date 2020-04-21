@@ -1,8 +1,8 @@
 package Interview_Calendar
 
 import (
-	"Internship/Courses"
 	"errors"
+	"github.com/mukhametkaly/DAR_Internship/Courses"
 )
 
 

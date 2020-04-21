@@ -1,27 +1,25 @@
 package Intern
 
-
 import (
-	"Internship/Account"
 	"encoding/json"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
-	"io"
+	"github.com/mukhametkaly/DAR_Internship/Account"
+	"github.com/mukhametkaly/DAR_Internship/Courses"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strconv"
-	"time"
+	"strings"
 )
 
 type Endpoints interface {
 	AddIntern() func(w http.ResponseWriter,r *http.Request)
-	GetInterns() func(w http.ResponseWriter,r *http.Request)
-	GetIntern(idParam string) func(w http.ResponseWriter,r *http.Request)
-	UpdateIntern(idParam string) func(w http.ResponseWriter,r *http.Request)
-	DeleteIntern(idParam string) func(w http.ResponseWriter,r *http.Request)
-	GetInternsFromCourses (idParam string)  func(w http.ResponseWriter,r *http.Request)
-	Authorization ()  func(w http.ResponseWriter,r *http.Request)
+	GetInterns(client *redis.Client) func(w http.ResponseWriter,r *http.Request)
+	GetIntern(idParam string, client *redis.Client, cccl *Courses.CourseCollectionClass) func(w http.ResponseWriter,r *http.Request)
+	UpdateIntern(idParam string, client *redis.Client) func(w http.ResponseWriter,r *http.Request)
+	DeleteIntern(idParam string, client *redis.Client) func(w http.ResponseWriter,r *http.Request)
+	GetInternsFromCourses (idParam string, client *redis.Client, cccl *Courses.CourseCollectionClass)  func(w http.ResponseWriter,r *http.Request)
+	Authorization (client *redis.Client)  func(w http.ResponseWriter,r *http.Request)
 
 }
 
@@ -47,8 +45,15 @@ func respondJSON(w http.ResponseWriter, status int, payload interface{}) {
 	w.Write([]byte(response))
 }
 
-func (ef *endpointsFactory) GetInterns() func(w http.ResponseWriter,r *http.Request){
+func (ef *endpointsFactory) GetInterns(client *redis.Client) func(w http.ResponseWriter,r *http.Request){
 	return func(w http.ResponseWriter,r *http.Request){
+		reqToken := strings.Split(r.Header.Get("Authorization"), " ")
+		data, _ := client.Get(reqToken[1]).Result()
+		roleAndId := strings.Split(data, " ")
+		if roleAndId[0] != "HR"{
+			http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+			return
+		}
 		course, err := ef.Intrn.GetInterns()
 		if err != nil {
 			respondJSON(w, http.StatusInternalServerError, "Ошибка"+err.Error())
@@ -80,27 +85,54 @@ func (ef *endpointsFactory) AddIntern() func(w http.ResponseWriter,r *http.Reque
 	}
 }
 
-func (ef *endpointsFactory) GetIntern(idParam string) func(w http.ResponseWriter,r *http.Request) {
+func (ef *endpointsFactory) GetIntern(idParam string, client *redis.Client, cccl *Courses.CourseCollection) func(w http.ResponseWriter,r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		reqToken := strings.Split(r.Header.Get("Authorization"), " ")
+		data, _ := client.Get(reqToken[1]).Result()
+		roleAndId := strings.Split(data, " ")
+
 		vars:=mux.Vars(r)
 		paramid, paramerr:=vars[idParam]
 		if !paramerr{
 			respondJSON(w,http.StatusBadRequest,"Не был передан аргумент")
 			return
 		}
+
 		id,err:=strconv.ParseInt(paramid,10,10)
 		intern,err:=ef.Intrn.GetIntern(id)
 		if err!=nil{
 			respondJSON(w,http.StatusInternalServerError,err.Error())
 			return
 		}
+
+		course, err := cccl.GetCourse(intern.InternID)
+		if err != nil {
+			respondJSON(w,http.StatusInternalServerError,err.Error())
+			return
+		}
+		if roleAndId[0] != "HR"{
+			if (roleAndId[0] == "L" && roleAndId[1] != strconv.FormatInt(course.LecturerID, 10)) || (roleAndId[0] == "I" && roleAndId[1] != paramid)  {
+					http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+					return
+
+			}
+
+		}
+
 		respondJSON(w,http.StatusOK,intern)
 	}
 }
 
 
-func (ef *endpointsFactory) DeleteIntern(idParam string) func(w http.ResponseWriter,r *http.Request){
+func (ef *endpointsFactory) DeleteIntern(idParam string, client *redis.Client) func(w http.ResponseWriter,r *http.Request){
 	return func(w http.ResponseWriter,r *http.Request){
+		reqToken := strings.Split(r.Header.Get("Authorization"), " ")
+		data, _ := client.Get(reqToken[1]).Result()
+		roleAndId := strings.Split(data, " ")
+		if roleAndId[0] != "HR"{
+			http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+			return
+		}
 		vars:=mux.Vars(r)
 		paramid,paramerr:=vars[idParam]
 		if !paramerr{
@@ -128,8 +160,13 @@ func (ef *endpointsFactory) DeleteIntern(idParam string) func(w http.ResponseWri
 }
 
 
-func (ef *endpointsFactory) UpdateIntern(idParam string) func(w http.ResponseWriter,r *http.Request){
+func (ef *endpointsFactory) UpdateIntern(idParam string, client *redis.Client) func(w http.ResponseWriter,r *http.Request){
 	return func(w http.ResponseWriter,r *http.Request){
+		reqToken := strings.Split(r.Header.Get("Authorization"), " ")
+		RedisData, _ := client.Get(reqToken[1]).Result()
+		roleAndId := strings.Split(RedisData, " ")
+
+
 		vars:=mux.Vars(r)
 		paramid,paramerr:=vars[idParam]
 		if !paramerr{
@@ -141,6 +178,14 @@ func (ef *endpointsFactory) UpdateIntern(idParam string) func(w http.ResponseWri
 			respondJSON(w,http.StatusBadRequest,err.Error())
 			return
 		}
+
+		if roleAndId[0] != "HR"{
+			if (roleAndId[0] == "I" && roleAndId[1] != paramid) || roleAndId[0] != "I" {
+				http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+				return
+			}
+		}
+
 		intern,err:=ef.Intrn.GetIntern(id)
 		if err!=nil{
 			respondJSON(w,http.StatusInternalServerError,err.Error())
@@ -164,8 +209,12 @@ func (ef *endpointsFactory) UpdateIntern(idParam string) func(w http.ResponseWri
 	}
 }
 
-func (ef *endpointsFactory) GetInternsFromCourses (idParam string)  func(w http.ResponseWriter,r *http.Request) {
+func (ef *endpointsFactory) GetInternsFromCourses (idParam string, client *redis.Client, cccl *Courses.CourseCollectionClass)  func(w http.ResponseWriter,r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		reqToken := strings.Split(r.Header.Get("Authorization"), " ")
+		data, _ := client.Get(reqToken[1]).Result()
+		roleAndId := strings.Split(data, " ")
+
 		vars:=mux.Vars(r)
 		paramid, paramerr:=vars[idParam]
 		if !paramerr{
@@ -178,11 +227,23 @@ func (ef *endpointsFactory) GetInternsFromCourses (idParam string)  func(w http.
 			respondJSON(w,http.StatusInternalServerError,err.Error())
 			return
 		}
+		course, err := cccl.GetCourse(id)
+		if err != nil {
+			respondJSON(w,http.StatusInternalServerError,err.Error())
+			return
+		}
+		if roleAndId[0] != "HR"{
+			if (roleAndId[0] == "L" && roleAndId[1] != strconv.FormatInt(course.LecturerID, 10)) || roleAndId[0] != "L"  {
+				http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+				return
+			}
+		}
+
 		respondJSON(w,http.StatusOK,interns)
 	}
 }
 
-func (ef *endpointsFactory) Authorization () func(w http.ResponseWriter,r *http.Request)  {
+func (ef *endpointsFactory) Authorization (client *redis.Client) func(w http.ResponseWriter,r *http.Request)  {
 	return func(w http.ResponseWriter, r *http.Request) {
 		data,err:=ioutil.ReadAll(r.Body)
 		if err!=nil{
@@ -194,24 +255,11 @@ func (ef *endpointsFactory) Authorization () func(w http.ResponseWriter,r *http.
 			respondJSON(w,http.StatusBadRequest,err.Error())
 			return
 		}
-		err =ef.Intrn.Authorization(account.UserName, account.Password)
+		err =ef.Intrn.Authorization(account.UserName, account.Password, client)
 		if err!=nil{
 			respondJSON(w,http.StatusBadRequest,err.Error())
 			return
 		}
-		log.Println("Hello you are intern --->", account.UserName)
-		w.Header().Add("Content-Type", "application/json")
-		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-			"exp":  time.Now().Add(time.Minute * time.Duration(2)).Unix(),
-			"iat":  time.Now().Unix(),
-		})
-		tokenString, err := token.SignedString([]byte("intern"))
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			io.WriteString(w, `{"error":"token_generation_failed"}`)
-			return
-		}
-		io.WriteString(w, `{"token":"`+tokenString+`"}`)
 
 		respondJSON(w,http.StatusOK, "Hello you are intern")
 

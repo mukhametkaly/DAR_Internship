@@ -2,20 +2,22 @@ package Internship
 
 import (
 	"encoding/json"
+	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
 	"io/ioutil"
 	"strconv"
+	"strings"
 
 	"net/http"
 )
 
 
 type Endpoints interface {
-	GetInternships() func(w http.ResponseWriter,r *http.Request)
-	AddInternship() func(w http.ResponseWriter,r *http.Request)
-	GetInternship(idParam string) func(w http.ResponseWriter,r *http.Request)
-	DeleteInternship(idParam string) func(w http.ResponseWriter,r *http.Request)
-	UpdateInternship(idParam string) func(w http.ResponseWriter,r *http.Request)
+	GetInternships(client *redis.Client) func(w http.ResponseWriter,r *http.Request)
+	AddInternship(client *redis.Client) func(w http.ResponseWriter,r *http.Request)
+	GetInternship(idParam string, client *redis.Client) func(w http.ResponseWriter,r *http.Request)
+	DeleteInternship(idParam string, client *redis.Client) func(w http.ResponseWriter,r *http.Request)
+	UpdateInternship(idParam string, client *redis.Client) func(w http.ResponseWriter,r *http.Request)
 
 }
 
@@ -41,8 +43,15 @@ func respondJSON(w http.ResponseWriter, status int, payload interface{}) {
 	w.Write([]byte(response))
 }
 
-func (ef *endpointsFactory) GetInternships() func(w http.ResponseWriter,r *http.Request){
+func (ef *endpointsFactory) GetInternships(client *redis.Client) func(w http.ResponseWriter,r *http.Request){
 	return func(w http.ResponseWriter,r *http.Request){
+		reqToken := strings.Split(r.Header.Get("Authorization"), " ")
+		data, _ := client.Get(reqToken[1]).Result()
+		roleAndId := strings.Split(data, " ")
+		if roleAndId[0] != "HR"{
+			http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+			return
+		}
 		internships, err := ef.Internsp.GetInternships()
 		if err != nil {
 			respondJSON(w, http.StatusInternalServerError, "Ошибка"+err.Error())
@@ -52,8 +61,15 @@ func (ef *endpointsFactory) GetInternships() func(w http.ResponseWriter,r *http.
 	}
 }
 
-func (ef *endpointsFactory) AddInternship() func(w http.ResponseWriter,r *http.Request){
+func (ef *endpointsFactory) AddInternship(client *redis.Client) func(w http.ResponseWriter,r *http.Request){
 	return func(w http.ResponseWriter,r *http.Request){
+		reqToken := strings.Split(r.Header.Get("Authorization"), " ")
+		RedisData, _ := client.Get(reqToken[1]).Result()
+		roleAndId := strings.Split(RedisData, " ")
+		if roleAndId[0] != "HR"{
+			http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+			return
+		}
 		data,err:=ioutil.ReadAll(r.Body)
 		if err!=nil{
 			respondJSON(w,http.StatusInternalServerError,err.Error())
@@ -74,8 +90,15 @@ func (ef *endpointsFactory) AddInternship() func(w http.ResponseWriter,r *http.R
 	}
 }
 
-func (ef *endpointsFactory) GetInternship(idParam string) func(w http.ResponseWriter,r *http.Request) {
+func (ef *endpointsFactory) GetInternship(idParam string, client *redis.Client) func(w http.ResponseWriter,r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		reqToken := strings.Split(r.Header.Get("Authorization"), " ")
+		RedisData, _ := client.Get(reqToken[1]).Result()
+		roleAndId := strings.Split(RedisData, " ")
+		if roleAndId[0] != "HR"{
+			http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+			return
+		}
 		vars:=mux.Vars(r)
 		paramid, paramerr:=vars[idParam]
 		if !paramerr{
@@ -83,18 +106,25 @@ func (ef *endpointsFactory) GetInternship(idParam string) func(w http.ResponseWr
 			return
 		}
 		id,err:=strconv.ParseInt(paramid,10,10)
-		student,err:=ef.Internsp.GetInternship(id)
+		internship,err:=ef.Internsp.GetInternship(id)
 		if err!=nil{
 			respondJSON(w,http.StatusInternalServerError,err.Error())
 			return
 		}
-		respondJSON(w,http.StatusOK,student)
+		respondJSON(w,http.StatusOK,internship)
 	}
 }
 
 
-func (ef *endpointsFactory) DeleteInternship(idParam string) func(w http.ResponseWriter,r *http.Request){
+func (ef *endpointsFactory) DeleteInternship(idParam string,client *redis.Client) func(w http.ResponseWriter,r *http.Request){
 	return func(w http.ResponseWriter,r *http.Request){
+		reqToken := strings.Split(r.Header.Get("Authorization"), " ")
+		RedisData, _ := client.Get(reqToken[1]).Result()
+		roleAndId := strings.Split(RedisData, " ")
+		if roleAndId[0] != "HR"{
+			http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+			return
+		}
 		vars:=mux.Vars(r)
 		paramid,paramerr:=vars[idParam]
 		if !paramerr{
@@ -122,8 +152,15 @@ func (ef *endpointsFactory) DeleteInternship(idParam string) func(w http.Respons
 }
 
 
-func (ef *endpointsFactory) UpdateInternship(idParam string) func(w http.ResponseWriter,r *http.Request){
+func (ef *endpointsFactory) UpdateInternship(idParam string, client *redis.Client) func(w http.ResponseWriter,r *http.Request){
 	return func(w http.ResponseWriter,r *http.Request){
+		reqToken := strings.Split(r.Header.Get("Authorization"), " ")
+		RedisData, _ := client.Get(reqToken[1]).Result()
+		roleAndId := strings.Split(RedisData, " ")
+		if roleAndId[0] != "HR"{
+			http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+			return
+		}
 		vars:=mux.Vars(r)
 		paramid,paramerr:=vars[idParam]
 		if !paramerr{

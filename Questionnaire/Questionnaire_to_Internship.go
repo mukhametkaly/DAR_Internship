@@ -1,8 +1,8 @@
 package Questionnaire
 
 import (
-	"Internship/internship"
-    "errors"
+	"errors"
+	"github.com/mukhametkaly/DAR_Internship/internship"
 )
 
 

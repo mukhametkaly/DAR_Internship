@@ -2,19 +2,21 @@ package Questionnaire
 
 import (
 	"encoding/json"
+	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type Endpoints interface {
-	GetQuestionnaires() func(w http.ResponseWriter,r *http.Request)
-	AddQuestionnaire() func(w http.ResponseWriter,r *http.Request)
+	GetQuestionnaires(client *redis.Client) func(w http.ResponseWriter,r *http.Request)
+	AddQuestionnaire(client *redis.Client) func(w http.ResponseWriter,r *http.Request)
 	GetQuestionnaire(idParam string) func(w http.ResponseWriter,r *http.Request)
-	DeleteQuestionnaire(idParam string) func(w http.ResponseWriter,r *http.Request)
-	UpdateQuestionnaire(idParam string) func(w http.ResponseWriter,r *http.Request)
-	GetQuestionnaireFromInternship (idParam string)  func(w http.ResponseWriter,r *http.Request)
+	DeleteQuestionnaire(idParam string, client *redis.Client) func(w http.ResponseWriter,r *http.Request)
+	UpdateQuestionnaire(idParam string, client *redis.Client) func(w http.ResponseWriter,r *http.Request)
+	GetQuestionnaireFromInternship (idParam string, client *redis.Client)  func(w http.ResponseWriter,r *http.Request)
 
 }
 
@@ -40,8 +42,15 @@ func respondJSON(w http.ResponseWriter, status int, payload interface{}) {
 	w.Write([]byte(response))
 }
 
-func (ef *endpointsFactory) GetQuestionnaires() func(w http.ResponseWriter,r *http.Request){
+func (ef *endpointsFactory) GetQuestionnaires(client *redis.Client) func(w http.ResponseWriter,r *http.Request){
 	return func(w http.ResponseWriter,r *http.Request){
+		reqToken := strings.Split(r.Header.Get("Authorization"), " ")
+		RedisData, _ := client.Get(reqToken[1]).Result()
+		roleAndId := strings.Split(RedisData, " ")
+		if roleAndId[0] != "HR"{
+			http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+			return
+		}
 		questionnaires, err := ef.Questnr.GetQuestionnaires()
 		if err != nil {
 			respondJSON(w, http.StatusInternalServerError, "Ошибка"+err.Error())
@@ -52,8 +61,15 @@ func (ef *endpointsFactory) GetQuestionnaires() func(w http.ResponseWriter,r *ht
 }
 
 
-func (ef *endpointsFactory) AddQuestionnaire() func(w http.ResponseWriter,r *http.Request){
+func (ef *endpointsFactory) AddQuestionnaire(client *redis.Client) func(w http.ResponseWriter,r *http.Request){
 	return func(w http.ResponseWriter,r *http.Request){
+		reqToken := strings.Split(r.Header.Get("Authorization"), " ")
+		RedisData, _ := client.Get(reqToken[1]).Result()
+		roleAndId := strings.Split(RedisData, " ")
+		if roleAndId[0] != "HR"{
+			http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+			return
+		}
 		data,err:=ioutil.ReadAll(r.Body)
 		if err!=nil{
 			respondJSON(w,http.StatusInternalServerError,err.Error())
@@ -93,8 +109,15 @@ func (ef *endpointsFactory) GetQuestionnaire(idParam string) func(w http.Respons
 }
 
 
-func (ef *endpointsFactory) DeleteQuestionnaire(idParam string) func(w http.ResponseWriter,r *http.Request){
+func (ef *endpointsFactory) DeleteQuestionnaire(idParam string, client *redis.Client) func(w http.ResponseWriter,r *http.Request){
 	return func(w http.ResponseWriter,r *http.Request){
+		reqToken := strings.Split(r.Header.Get("Authorization"), " ")
+		RedisData, _ := client.Get(reqToken[1]).Result()
+		roleAndId := strings.Split(RedisData, " ")
+		if roleAndId[0] != "HR"{
+			http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+			return
+		}
 		vars:=mux.Vars(r)
 		paramid,paramerr:=vars[idParam]
 		if !paramerr{
@@ -122,8 +145,15 @@ func (ef *endpointsFactory) DeleteQuestionnaire(idParam string) func(w http.Resp
 }
 
 
-func (ef *endpointsFactory) UpdateQuestionnaire(idParam string) func(w http.ResponseWriter,r *http.Request){
+func (ef *endpointsFactory) UpdateQuestionnaire(idParam string, client *redis.Client) func(w http.ResponseWriter,r *http.Request){
 	return func(w http.ResponseWriter,r *http.Request){
+		reqToken := strings.Split(r.Header.Get("Authorization"), " ")
+		RedisData, _ := client.Get(reqToken[1]).Result()
+		roleAndId := strings.Split(RedisData, " ")
+		if roleAndId[0] != "HR"{
+			http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+			return
+		}
 		vars:=mux.Vars(r)
 		paramid,paramerr:=vars[idParam]
 		if !paramerr{
@@ -157,8 +187,15 @@ func (ef *endpointsFactory) UpdateQuestionnaire(idParam string) func(w http.Resp
 		respondJSON(w,http.StatusOK,updated_questionnaire)
 	}
 }
-func (ef *endpointsFactory) GetQuestionnaireFromInternship (idParam string)  func(w http.ResponseWriter,r *http.Request) {
+func (ef *endpointsFactory) GetQuestionnaireFromInternship (idParam string, client *redis.Client)  func(w http.ResponseWriter,r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		reqToken := strings.Split(r.Header.Get("Authorization"), " ")
+		RedisData, _ := client.Get(reqToken[1]).Result()
+		roleAndId := strings.Split(RedisData, " ")
+		if roleAndId[0] != "HR"{
+			http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+			return
+		}
 		vars:=mux.Vars(r)
 		paramid, paramerr:=vars[idParam]
 		if !paramerr{

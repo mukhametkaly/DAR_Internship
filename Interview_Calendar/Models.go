@@ -13,8 +13,10 @@ type InterviewCalendar struct {
 	InterviewCalendarID int64  `json:"interviewcalendar_id"`
 	ComeDate            string `json:"come_date"`
 	ComeTime            string `json:"come_time"`
+	LecturerID          int64   `json:"lecturer_id"`
 	LecturerMail        string `json:"lecturer_mail"`
 	Duration            string `json:"duration"`
+	InternID            int64  `json:"intern_id"`
 	InternMail          string `json:"intern_mail"`
 	CourseID            int64  `json:"course_id"`
 

@@ -2,19 +2,21 @@ package Interview_Calendar
 
 import (
 	"encoding/json"
+	"github.com/go-redis/redis"
 	"github.com/gorilla/mux"
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type Endpoints interface {
-	AddInterviewCalendar() func(w http.ResponseWriter,r *http.Request)
-	GetInterviewCalendars() func(w http.ResponseWriter,r *http.Request)
-	GetInterviewCalendar(idParam string) func(w http.ResponseWriter,r *http.Request)
-	UpdateInterviewCalendar(idParam string) func(w http.ResponseWriter,r *http.Request)
-	DeleteInterviewCalendar(idParam string) func(w http.ResponseWriter,r *http.Request)
-	GetInternviewCalendarFromCourses (idParam string)  func(w http.ResponseWriter,r *http.Request)
+	AddInterviewCalendar(client *redis.Client) func(w http.ResponseWriter,r *http.Request)
+	GetInterviewCalendars(client *redis.Client) func(w http.ResponseWriter,r *http.Request)
+	GetInterviewCalendar(idParam string, client *redis.Client) func(w http.ResponseWriter,r *http.Request)
+	UpdateInterviewCalendar(idParam string, client *redis.Client) func(w http.ResponseWriter,r *http.Request)
+	DeleteInterviewCalendar(idParam string, client *redis.Client) func(w http.ResponseWriter,r *http.Request)
+	GetInternviewCalendarFromCourses (idParam string, client *redis.Client)  func(w http.ResponseWriter,r *http.Request)
 
 }
 
@@ -29,6 +31,7 @@ func NewEndpointsFactory(interCal CourseInterviewsCal) Endpoints{
 }
 
 func respondJSON(w http.ResponseWriter, status int, payload interface{}) {
+
 	response, err := json.Marshal(payload)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -40,8 +43,15 @@ func respondJSON(w http.ResponseWriter, status int, payload interface{}) {
 	w.Write([]byte(response))
 }
 
-func (ef *endpointsFactory) GetInterviewCalendars() func(w http.ResponseWriter,r *http.Request){
+func (ef *endpointsFactory) GetInterviewCalendars(client *redis.Client) func(w http.ResponseWriter,r *http.Request){
 	return func(w http.ResponseWriter,r *http.Request){
+		reqToken := strings.Split(r.Header.Get("Authorization"), " ")
+		data, _ := client.Get(reqToken[1]).Result()
+		roleAndId := strings.Split(data, " ")
+		if roleAndId[0] != "HR"{
+			http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+			return
+		}
 		course, err := ef.InterCal.GetInterviewCals()
 		if err != nil {
 			respondJSON(w, http.StatusInternalServerError, "Ошибка"+err.Error())
@@ -51,8 +61,15 @@ func (ef *endpointsFactory) GetInterviewCalendars() func(w http.ResponseWriter,r
 	}
 }
 
-func (ef *endpointsFactory) AddInterviewCalendar() func(w http.ResponseWriter,r *http.Request){
+func (ef *endpointsFactory) AddInterviewCalendar(client *redis.Client) func(w http.ResponseWriter,r *http.Request){
 	return func(w http.ResponseWriter,r *http.Request){
+		reqToken := strings.Split(r.Header.Get("Authorization"), " ")
+		RedisData, _ := client.Get(reqToken[1]).Result()
+		roleAndId := strings.Split(RedisData, " ")
+		if roleAndId[0] != "HR"{
+			http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+			return
+		}
 		data,err:=ioutil.ReadAll(r.Body)
 		if err!=nil{
 			respondJSON(w,http.StatusInternalServerError,err.Error())
@@ -73,8 +90,11 @@ func (ef *endpointsFactory) AddInterviewCalendar() func(w http.ResponseWriter,r 
 	}
 }
 
-func (ef *endpointsFactory) GetInterviewCalendar(idParam string) func(w http.ResponseWriter,r *http.Request) {
+func (ef *endpointsFactory) GetInterviewCalendar(idParam string, client *redis.Client) func(w http.ResponseWriter,r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		reqToken := strings.Split(r.Header.Get("Authorization"), " ")
+		data, _ := client.Get(reqToken[1]).Result()
+		roleAndId := strings.Split(data, " ")
 		vars:=mux.Vars(r)
 		paramid, paramerr:=vars[idParam]
 		if !paramerr{
@@ -87,13 +107,38 @@ func (ef *endpointsFactory) GetInterviewCalendar(idParam string) func(w http.Res
 			respondJSON(w,http.StatusInternalServerError,err.Error())
 			return
 		}
+		if roleAndId[0] != "HR"{
+			if roleAndId[0] == "L" {
+				if roleAndId[1] != strconv.FormatInt(interviewCalendar.LecturerID, 10)  {
+					http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+					return
+				}
+			} else if roleAndId[1] == "I" {
+				if roleAndId[1] != strconv.FormatInt(interviewCalendar.InternID, 10)  {
+					http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+					return
+				}
+
+			} else {
+				http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+				return
+			}
+		}
 		respondJSON(w,http.StatusOK,interviewCalendar)
+
 	}
 }
 
 
-func (ef *endpointsFactory) DeleteInterviewCalendar(idParam string) func(w http.ResponseWriter,r *http.Request){
+func (ef *endpointsFactory) DeleteInterviewCalendar(idParam string, client *redis.Client) func(w http.ResponseWriter,r *http.Request){
 	return func(w http.ResponseWriter,r *http.Request){
+		reqToken := strings.Split(r.Header.Get("Authorization"), " ")
+		data, _ := client.Get(reqToken[1]).Result()
+		roleAndId := strings.Split(data, " ")
+		if roleAndId[0] != "HR"{
+			http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+			return
+		}
 		vars:=mux.Vars(r)
 		paramid,paramerr:=vars[idParam]
 		if !paramerr{
@@ -121,8 +166,15 @@ func (ef *endpointsFactory) DeleteInterviewCalendar(idParam string) func(w http.
 }
 
 
-func (ef *endpointsFactory) UpdateInterviewCalendar(idParam string) func(w http.ResponseWriter,r *http.Request){
+func (ef *endpointsFactory) UpdateInterviewCalendar(idParam string, client *redis.Client) func(w http.ResponseWriter,r *http.Request){
 	return func(w http.ResponseWriter,r *http.Request){
+		reqToken := strings.Split(r.Header.Get("Authorization"), " ")
+		RedisData, _ := client.Get(reqToken[1]).Result()
+		roleAndId := strings.Split(RedisData, " ")
+		if roleAndId[0] != "HR"{
+			http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+			return
+		}
 		vars:=mux.Vars(r)
 		paramid,paramerr:=vars[idParam]
 		if !paramerr{
@@ -157,8 +209,15 @@ func (ef *endpointsFactory) UpdateInterviewCalendar(idParam string) func(w http.
 	}
 }
 
-func (ef *endpointsFactory) GetInternviewCalendarFromCourses (idParam string)  func(w http.ResponseWriter,r *http.Request) {
+func (ef *endpointsFactory) GetInternviewCalendarFromCourses (idParam string, client *redis.Client)  func(w http.ResponseWriter,r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		reqToken := strings.Split(r.Header.Get("Authorization"), " ")
+		data, _ := client.Get(reqToken[1]).Result()
+		roleAndId := strings.Split(data, " ")
+		if roleAndId[0] != "HR"{
+			http.Error(w, "StatusBadRequest", http.StatusBadRequest)
+			return
+		}
 		vars:=mux.Vars(r)
 		paramid, paramerr:=vars[idParam]
 		if !paramerr{

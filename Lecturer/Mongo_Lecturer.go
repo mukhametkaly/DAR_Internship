@@ -1,23 +1,35 @@
 package Lecturer
 
 import (
-	"Internship/internship"
 	"context"
 	"errors"
 	"fmt"
+	"github.com/go-redis/redis"
+	"github.com/mukhametkaly/DAR_Internship/Account"
+	"github.com/mukhametkaly/DAR_Internship/internship"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"strconv"
+	"strings"
+	"time"
+
 )
 
 var (
 	collection *mongo.Collection
+
 )
 
 
 type LecturersClass struct{
 	dbcon *mongo.Database
 }
+
+
+
+
+
 
 
 func NewLecturerCollection(config Internship.MongoConfig) (Lecturers, error){
@@ -108,6 +120,7 @@ func (lec *LecturersClass) UpdateLecturer (lecturer *Lecturer)  (*Lecturer, erro
 
 	filter:=bson.D{{"lecturerid",lecturer.LecturerID}}
 	update:=bson.D{{"$set",bson.D{
+		{"username", lecturer.UserName},
 		{"name",lecturer.LecturerName},
 		{"mail",lecturer.Mail},
 		{"courseid", lecturer.CourseID},
@@ -140,14 +153,28 @@ func (cocc *LecturersClass) GetLecturerByUsername (username string) (*Lecturer, 
 	return lecturer,nil
 }
 
-func (cocc *LecturersClass) Authorization (username string, password string) error  {
+func (cocc *LecturersClass) Authorization (username string, password string, client *redis.Client)  error  {
 	lecturer, err := cocc.GetLecturerByUsername(username)
 	if err!=nil{
-		return errors.New("Invalid username")
+		return  errors.New("Invalid username")
 	}
 	if lecturer.Password != password {
 		return errors.New("Invalid password")
 	}
+
+	tokenString := Account.CreateToken()
+	value := "L " + strconv.FormatInt(lecturer.LecturerID, 10)
+	client.Set(tokenString, value, time.Minute * 3)
+	data := strings.Split(client.Get(tokenString).String(), " ")
+	fmt.Println(data[2])
+	pong, err := client.Ping().Result()
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(pong, err)
+	fmt.Println(tokenString+" "+value)
+
 	return nil
 }
 

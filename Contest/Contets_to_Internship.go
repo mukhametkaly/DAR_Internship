@@ -1,7 +1,7 @@
 package Contest
 
 import (
-	"Internship/internship"
+	"github.com/mukhametkaly/DAR_Internship/internship"
 	"errors"
 )
 

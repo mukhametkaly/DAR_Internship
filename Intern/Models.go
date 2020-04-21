@@ -1,5 +1,7 @@
 package Intern
 
+import "github.com/go-redis/redis"
+
 type InternCollection interface {
 	AddIntern(intern *Intern) (*Intern, error)
 	GetInterns() ([]*Intern,error)
@@ -8,7 +10,7 @@ type InternCollection interface {
 	DeleteIntern(intern *Intern) error
 	GetInternsFromCourses (id int64)  ([]*Intern, error)
 	GetInternByUsername (username string)  (*Intern, error)
-	Authorization (username string, password string) error
+	Authorization (username string, password string, client *redis.Client) error
 
 }
 

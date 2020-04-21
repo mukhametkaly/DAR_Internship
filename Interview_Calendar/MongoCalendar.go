@@ -3,10 +3,10 @@ package Interview_Calendar
 import (
 	"context"
 	"fmt"
+	"github.com/mukhametkaly/DAR_Internship/internship"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"Internship/internship"
 	"log"
 )
 var (
@@ -107,8 +107,10 @@ func (incc *InterviewCalendarCollectionClass) UpdateInterviewCalendar (interview
 	update:=bson.D{{"$set",bson.D{
 		{"comedate",interviewCalendar.ComeDate},
 		{"cometime",interviewCalendar.ComeTime},
+		{"lecturerid", interviewCalendar.LecturerID},
 		{"lecturermail",interviewCalendar.LecturerMail},
 		{"duration",interviewCalendar.Duration},
+		{"internid", interviewCalendar.InternID},
 		{"internmail",interviewCalendar.InternMail},
 		{"courseid",interviewCalendar.CourseID},
 
