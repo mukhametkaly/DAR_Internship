@@ -114,6 +114,7 @@ func (cocc *InternCollectionClass) UpdateIntern (intern *Intern)  (*Intern, erro
 
 	filter:=bson.D{{"internid",intern.InternID}}
 	update:=bson.D{{"$set",bson.D{
+		{"username", intern.UserName},
 		{"name",intern.Name},
 		{"mail",intern.Mail},
 		{"password", intern.Password},

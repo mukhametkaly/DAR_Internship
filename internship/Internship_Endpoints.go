@@ -146,7 +146,7 @@ func (ef *endpointsFactory) DeleteInternship(idParam string,client *redis.Client
 			respondJSON(w,http.StatusInternalServerError,err.Error())
 			return
 		}
-		respondJSON(w,http.StatusOK,"Student was deleted")
+		respondJSON(w,http.StatusOK,"Internship was deleted")
 	}
 
 }
